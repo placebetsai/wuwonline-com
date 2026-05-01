@@ -5,6 +5,10 @@ import os, json, re, html as H
 ROOT = os.path.dirname(os.path.abspath(__file__))
 all_pages = json.load(open(f'{ROOT}/_data/posts.json'))
 img_map = json.load(open(f'{ROOT}/_data/img-map.json'))
+try:
+    ALUMNI_PHOTOS = json.load(open(f'{ROOT}/_data/alumni-with-photos.json'))
+except FileNotFoundError:
+    ALUMNI_PHOTOS = []
 
 PHONE = '718-797-2872'
 ADDR_LINE_1 = "Gleason's Gym · 130 Water Street"
@@ -69,6 +73,19 @@ def rewrite(body):
     body = re.sub(r'<div[^>]*class="[^"]*sharedaddy[^"]*"[^>]*>.*?</div>\s*</div>', '', body, flags=re.S | re.I)
     body = re.sub(r'<style[^>]*>.*?</style>', '', body, flags=re.S | re.I)
     return body.strip()
+
+def page_body(slug_path):
+    for q in all_pages:
+        path = '/' + q['url'].split('://')[1].split('/',1)[1] if '://' in q['url'] else ''
+        if path.rstrip('/') == slug_path.rstrip('/'):
+            return rewrite(q.get('body_html', ''))
+    return ''
+
+def append_wp_extras(html_str, slug):
+    body = page_body(slug)
+    if not body or len(body) < 200: return html_str
+    extra = '<section class="wp-extra"><div class="wp-extra-frame"><h2 class="wp-extra-h">More from the WUW archive</h2><div class="wp-extra-body">' + body + '</div></div></section>'
+    return html_str.replace('</main>', extra + '</main>', 1)
 
 def head(title, desc, canonical):
     og = 'https://wuwonline.com/img/og-default.jpg'
@@ -217,7 +234,10 @@ def render_home():
 ''' + footer()
 
 def render_alumni():
-    cards = ''.join(f'<article class="al-card"><h3>{H.escape(n)}</h3><p>{H.escape(c)}</p></article>' for n, c in ALUMNI)
+    if ALUMNI_PHOTOS:
+        cards = ''.join(f'<article class="al-card"><div class="al-img"><img src="{H.escape(a["img"])}" alt="{H.escape(a["name"])}" loading="lazy"></div><h3>{H.escape(a["name"])}</h3></article>' for a in ALUMNI_PHOTOS)
+    else:
+        cards = ''.join(f'<article class="al-card"><h3>{H.escape(n)}</h3><p>{H.escape(c)}</p></article>' for n, c in ALUMNI)
     return head('WUW Alumni · 400+ Trained by Johnny Rodz', "Alumni include Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich, Marti Belle, Vince Russo, Matt Striker. 400+ professional wrestlers trained at Gleason's Gym Brooklyn.", 'https://wuwonline.com/alumni/') + f'''
 <main class="page"><div class="page-frame">
   <header class="page-head"><p class="ps-eyebrow">{len(ALUMNI)}+ featured · 400+ trained total</p><h1 class="page-h">Alumni</h1><p class="page-lede">Trained by Johnny Rodz at Gleason's Gym — went on to headline WWE, WCW, ECW, TNA, AEW, Impact, and beyond.</p></header>
@@ -400,10 +420,36 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .page-head{text-align:center;margin-bottom:64px;padding-bottom:36px;border-bottom:2px solid var(--accent)}
 .page-h{font-family:var(--display);font-size:clamp(56px,9vw,128px);text-transform:uppercase;color:var(--ink);line-height:.92;margin-bottom:18px}
 .page-lede{font-size:18px;line-height:1.5;color:var(--ink);opacity:.75;max-width:60ch;margin:0 auto}
-.al-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.al-card{padding:22px 20px;background:var(--bone-soft);border-left:4px solid var(--accent)}
-.al-card h3{font-family:var(--display);font-size:24px;text-transform:uppercase;color:var(--ink);margin-bottom:6px;line-height:1.05}
-.al-card p{font-size:13px;color:var(--ink);opacity:.7}
+.al-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.al-card{padding:0;background:var(--bone-soft);border-left:4px solid var(--accent);overflow:hidden;display:flex;flex-direction:column;transition:transform .35s,box-shadow .35s}
+.al-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
+.al-img{aspect-ratio:1/1;overflow:hidden;background:var(--ink);position:relative}
+.al-img img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:saturate(.92) contrast(1.06);transition:transform .9s}
+.al-card:hover .al-img img{transform:scale(1.06)}
+.al-card h3{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--ink);padding:14px 16px 16px;line-height:1.1;letter-spacing:.02em}
+.wp-extra{background:#000;color:var(--bone);padding:64px 0;border-top:2px solid var(--accent)}
+.wp-extra-frame{max-width:var(--max);margin:0 auto;padding:0 var(--frame-pad)}
+.wp-extra-h{font-family:var(--display);font-size:32px;text-transform:uppercase;color:var(--gold);margin-bottom:32px;text-align:center;letter-spacing:.04em}
+.wp-extra-body{font-size:15px;line-height:1.7;color:rgba(244,240,232,.85);max-width:920px;margin:0 auto}
+.wp-extra-body h1,.wp-extra-body h2{font-family:var(--display);text-transform:uppercase;color:var(--bone);margin:1.5em 0 .5em;letter-spacing:.02em}
+.wp-extra-body h2{font-size:24px}
+.wp-extra-body h3{font-family:var(--display);font-size:18px;color:var(--accent);margin:1.2em 0 .4em;text-transform:uppercase}
+.wp-extra-body p{margin-bottom:1em}
+.wp-extra-body img{max-width:100%;height:auto;margin:18px 0;border:1px solid rgba(244,240,232,.1)}
+.wp-extra-body a{color:var(--accent);border-bottom:1px solid currentColor}
+.wp-extra-body figure{margin:20px 0}
+.wp-extra-body figcaption{font-size:12px;color:rgba(244,240,232,.55);margin-top:6px;font-style:italic}
+.wp-extra-body ul,.wp-extra-body ol{margin:1em 0;padding-left:1.4em}
+.wp-extra-body ul li,.wp-extra-body ol li{margin-bottom:.4em;list-style:disc}
+/* Hero animation */
+.ht-1,.ht-2,.ht-3{display:block;opacity:0;transform:translateY(50px) skew(0deg,2deg);animation:wuwSlam 1.1s cubic-bezier(.2,.7,.2,1) forwards;will-change:transform,opacity}
+.ht-1{animation-delay:.15s}
+.ht-2{animation-delay:.55s}
+.ht-3{animation-delay:.85s}
+@keyframes wuwSlam{0%{opacity:0;transform:translateY(50px) skew(0,3deg)}60%{opacity:1}100%{opacity:1;transform:translateY(0) skew(0,0)}}
+.hero-image img{animation:wuwZoom 28s ease-in-out infinite alternate}
+@keyframes wuwZoom{0%{transform:scale(1.02)}100%{transform:scale(1.14) translate(-1.5%,-1.5%)}}
+@media (prefers-reduced-motion:reduce){.ht-1,.ht-2,.ht-3{opacity:1;transform:none;animation:none}.hero-image img{animation:none}}
 .memorial{padding:32px;background:#000;color:var(--bone);margin-bottom:48px;text-align:center;border:1px solid var(--gold)}
 .me-cross{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
 .memorial h2{font-family:var(--display);font-size:32px;text-transform:uppercase;margin-bottom:14px}
@@ -471,13 +517,13 @@ def write(path, content):
     with open(out, 'w') as f: f.write(content)
 
 write('index.html', render_home())
-write('alumni/index.html', render_alumni())
-write('roster/index.html', render_roster())
-write('title-holders/index.html', render_titles())
-write('events/index.html', render_events())
-write('about/index.html', render_about())
-write('contact/index.html', render_contact())
-write('in-the-news/index.html', render_news())
+write('alumni/index.html', append_wp_extras(render_alumni(), '/alumni/'))
+write('roster/index.html', append_wp_extras(render_roster(), '/roster/'))
+write('title-holders/index.html', append_wp_extras(render_titles(), '/title-holders/'))
+write('events/index.html', append_wp_extras(render_events(), '/events/'))
+write('about/index.html', append_wp_extras(render_about(), '/about/'))
+write('contact/index.html', append_wp_extras(render_contact(), '/contact/'))
+write('in-the-news/index.html', append_wp_extras(render_news(), '/in-the-news/'))
 write('styles.css', render_styles())
 
 post_count = 0
