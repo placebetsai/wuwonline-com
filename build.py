@@ -132,6 +132,7 @@ def head(title, desc, canonical):
     <img src="/img/logo.png" alt="WUW — World Of Unpredictable Wrestling" class="wm-logo" />
   </a>
   <nav class="primary" aria-label="Primary">
+    <a href="/">Home</a>
     <a href="/johnny-rodz/">Johnny Rodz</a>
     <a href="/alumni/">Alumni</a>
     <a href="/roster/">Roster</a>
@@ -189,52 +190,75 @@ def footer():
 def render_home():
     canonical = 'https://wuwonline.com/'
     title = 'WUW · Train with Johnny Rodz — WWE Hall of Famer · Brooklyn'
-    desc = "Train pro wrestling at Gleason's Gym Brooklyn with Johnny Rodz, WWE Hall of Famer (Class of 1996). 400+ wrestlers trained including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich. Call 718-797-2872."
-    alumni_strip = ' · '.join(f'<span class="al-name">{n}</span>' for n, _ in ALUMNI[:9])
-    creds = ''.join(f'<div class="cred"><span class="cr-num">{n}</span><span class="cr-h">{h}</span><span class="cr-d">{d}</span></div>' for n, h, d in CREDENTIALS)
+    desc = "Train pro wrestling at Gleason's Gym Brooklyn with Johnny Rodz, WWE Hall of Famer (Class of 1996). 400+ wrestlers trained — Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich. Call 718-797-2872."
     return head(title, desc, canonical) + f'''
-<main class="home">
-  <section class="hero">
-    <picture class="hero-image" aria-hidden="true"><img src="/img/hero.jpg" alt="" loading="eager"/></picture>
-    <div class="hero-veil"></div>
-    <div class="hero-frame">
-      <p class="hero-eyebrow"><span>Brooklyn, NY</span><span class="dot"></span><span>Gleason's Gym</span><span class="dot"></span><span>Est. 1980s</span></p>
-      <h1 class="hero-title">
-        <span class="ht-1">Train</span>
-        <span class="ht-2">with</span>
-        <span class="ht-3"><em>Johnny Rodz</em></span>
+<main class="home portal">
+  <section class="ph-hero" aria-label="WUW — World of Unpredictable Wrestling">
+    <picture class="ph-image" aria-hidden="true"><img src="/img/hero.jpg" alt="" loading="eager" fetchpriority="high"/></picture>
+    <div class="ph-veil" aria-hidden="true"></div>
+    <div class="ph-frame">
+      <p class="ph-eyebrow"><span class="rule"></span><span>Brooklyn · Gleason's Gym · est. 1980s</span></p>
+      <h1 class="ph-title">
+        <span class="ph-line"><span class="ph-word ph-w1">Train</span></span>
+        <span class="ph-line"><span class="ph-word ph-w2">with the</span></span>
+        <span class="ph-line"><span class="ph-word ph-w3 ph-em">Hall of Famer</span></span>
       </h1>
-      <p class="hero-sub">WWE Hall of Famer · 400+ professional wrestlers trained · the man who trained Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.</p>
-      <div class="hero-cta-row">
-        <a class="btn-primary" href="/contact/">Start Training Today</a>
-        <a class="btn-ghost" href="tel:7187972872">📞 {PHONE}</a>
-      </div>
+      <p class="ph-sub">Johnny Rodz — Brooklyn legend, WWE Hall of Fame Class of 1996, the trainer behind <em>Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich</em> and 400+ professional wrestlers.</p>
     </div>
   </section>
-  <section class="alumni-strip" aria-label="Alumni"><p class="ps-eyebrow">A few of the 400+ trained at WUW</p><div class="al-row">{alumni_strip}</div><p class="al-more"><a href="/alumni/">See the full alumni list →</a></p></section>
-  <section class="creds"><h2 class="sec-h">The Credentials</h2><div class="cred-grid">{creds}</div></section>
-  <section class="learn"><div class="lr-grid">
-    <div class="lr-img"><img src="/img/about.jpg" alt="Training at Gleason's Gym" loading="lazy"/></div>
-    <div class="lr-body">
-      <p class="ps-eyebrow">What you learn</p>
-      <h2 class="sec-h">Real training. Real fundamentals.</h2>
-      <ul class="lr-list">
-        <li><strong>Ring fundamentals</strong> — bumping, rolling, holds, counters.</li>
-        <li><strong>Ring psychology</strong> — how to tell a story in real time.</li>
-        <li><strong>Cardio &amp; conditioning</strong> — what it takes to last.</li>
-        <li><strong>Promo &amp; mic work</strong> — your character on the microphone.</li>
-        <li><strong>Match construction</strong> — building the high spots and the calls.</li>
-      </ul>
-      <p><a class="link-cta" href="/about/">More about WUW →</a></p>
-    </div>
-  </div></section>
-  <section class="contact-cta">
-    <h2 class="sec-h">Ready to step in the ring?</h2>
-    <p class="cc-sub">Open to everyone — men and women, all experience levels.<br>If you're serious about a career in pro wrestling, this is where it starts.</p>
-    <div class="cc-grid">
-      <div class="cc-card"><p class="cc-h">📞 Call</p><p class="cc-v"><a href="tel:7187972872">{PHONE}</a></p><p class="cc-d">Ask for Johnny Rodz</p></div>
-      <div class="cc-card"><p class="cc-h">📍 Where</p><p class="cc-v">{ADDR_LINE_1}</p><p class="cc-d">{ADDR_LINE_2}</p></div>
-      <div class="cc-card"><p class="cc-h">📅 Schedule</p>{''.join(f'<p class="cc-v sm">{d}</p><p class="cc-d">{t}</p>' for d, t in SCHEDULE)}</div>
+
+  <section class="pc-cards" aria-label="Pick a path">
+    <a class="pc-card pc-train" href="/contact/" aria-label="Start training">
+      <picture class="pc-img"><img src="/img/about.jpg" alt="" loading="eager"/></picture>
+      <div class="pc-veil"></div>
+      <div class="pc-body">
+        <p class="pc-eyebrow">Open to everyone · M T Th &amp; Sat</p>
+        <h2 class="pc-h">Train</h2>
+        <p class="pc-meta">Step into the ring. Ring fundamentals, psychology, mic work — taught by the man who trained the names you grew up watching.</p>
+        <p class="pc-cta"><span>Start Training</span> <svg width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true"><path d="M0 6h20M15 1l5 5-5 5" stroke="currentColor" stroke-width="1.4"/></svg></p>
+      </div>
+    </a>
+    <a class="pc-card pc-alumni" href="/alumni/" aria-label="See the WUW alumni">
+      <picture class="pc-img"><img src="/img/tazz2.jpg" alt="" loading="eager"/></picture>
+      <div class="pc-veil"></div>
+      <div class="pc-body">
+        <p class="pc-eyebrow">400+ trained · WWE · ECW · TNA · AEW · ROH</p>
+        <h2 class="pc-h">Alumni</h2>
+        <p class="pc-meta">Tazz. Tommy Dreamer. D-Von Dudley. Big Cass. Masha Slamovich. Marti Belle. Vince Russo. Matt Striker. The list keeps going.</p>
+        <p class="pc-cta"><span>See the Roll</span> <svg width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true"><path d="M0 6h20M15 1l5 5-5 5" stroke="currentColor" stroke-width="1.4"/></svg></p>
+      </div>
+    </a>
+    <a class="pc-card pc-events" href="/events/" aria-label="WUW live events">
+      <picture class="pc-img"><img src="/img/next-show.jpg" alt="" loading="eager"/></picture>
+      <div class="pc-veil"></div>
+      <div class="pc-body">
+        <p class="pc-eyebrow">Live shows · Brooklyn</p>
+        <h2 class="pc-h">Watch</h2>
+        <p class="pc-meta">Live cards from Gleason's Gym. Championship matches. The wrestlers Johnny is building right now.</p>
+        <p class="pc-cta"><span>See Events</span> <svg width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true"><path d="M0 6h20M15 1l5 5-5 5" stroke="currentColor" stroke-width="1.4"/></svg></p>
+      </div>
+    </a>
+  </section>
+
+  <section class="meet-johnny" id="johnny">
+    <div class="mj-frame">
+      <div class="mj-photo"><img src="/img/meet-johnny.jpg" alt="Johnny Rodz at Gleason's Gym" loading="lazy"/></div>
+      <div class="mj-body">
+        <p class="ps-eyebrow">Meet Johnny</p>
+        <h2 class="mj-h">Johnny <em>"The Unpredictable"</em> Rodz</h2>
+        <p class="mj-lede">WWE Hall of Fame, Class of 1996. Born José Rodriguez in Brooklyn. Four decades on the MSG circuit and across the WWF — then four more decades quietly building the next generation of pro wrestlers.</p>
+        <p class="mj-bio">If you've watched WWE, ECW, TNA, AEW or Impact in the last twenty years you've watched a Johnny Rodz student. WUW's the school he runs out of <strong>Gleason's Gym</strong> — the same Brooklyn boxing temple that's produced world champions for decades.</p>
+        <dl class="mj-contact">
+          <div><dt>Call</dt><dd><a href="tel:7187972872">{PHONE}</a></dd></div>
+          <div><dt>Email</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd></div>
+          <div><dt>Visit</dt><dd>{ADDR_LINE_1}<br>{ADDR_LINE_2}</dd></div>
+          <div><dt>Train</dt><dd>{SCHEDULE[0][0]} · {SCHEDULE[0][1]}<br>{SCHEDULE[1][0]} · {SCHEDULE[1][1]}</dd></div>
+        </dl>
+        <div class="mj-cta-row">
+          <a class="btn-primary" href="/contact/">Start Training</a>
+          <a class="btn-ghost" href="/johnny-rodz/">Read the Bio →</a>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -475,7 +499,81 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .wp-extra-body figcaption{font-size:12px;color:rgba(244,240,232,.55);margin-top:6px;font-style:italic}
 .wp-extra-body ul,.wp-extra-body ol{margin:1em 0;padding-left:1.4em}
 .wp-extra-body ul li,.wp-extra-body ol li{margin-bottom:.4em;list-style:disc}
-/* Hero animation */
+/* Portal homepage — KetiService-style template adapted for WUW */
+.portal{padding-top:0}
+.ph-hero{position:relative;min-height:clamp(540px,82vh,720px);display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;isolation:isolate;text-align:center;color:var(--bone)}
+.ph-image{position:absolute;inset:0;z-index:0}
+.ph-image img{width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:saturate(.7) contrast(1.15) brightness(.55);animation:phZoom 24s ease-in-out infinite alternate}
+@keyframes phZoom{0%{transform:scale(1.02)}100%{transform:scale(1.14) translate(-1.5%,-1.5%)}}
+.ph-veil{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.4) 0%,rgba(0,0,0,.7) 60%,rgba(0,0,0,.95)),linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.85))}
+.ph-frame{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:clamp(120px,16vh,160px) var(--frame-pad) clamp(48px,6vh,72px)}
+.ph-eyebrow{display:inline-flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);background:rgba(0,0,0,.55);padding:9px 18px;border:1px solid rgba(212,167,58,.4);margin-bottom:32px;font-weight:600;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.ph-eyebrow .rule{display:inline-block;width:28px;height:1px;background:var(--accent)}
+.ph-title{font-family:var(--display);text-transform:uppercase;font-size:clamp(54px,9.5vw,128px);line-height:.92;letter-spacing:-.005em;color:var(--bone);margin-bottom:28px;text-shadow:0 4px 32px rgba(0,0,0,.7)}
+.ph-line{display:block;overflow:hidden;padding-bottom:.04em}
+.ph-word{display:inline-block;opacity:0;transform:translateY(110%) skew(0deg,2deg);animation:phWordRise 1.05s cubic-bezier(.2,.7,.2,1) forwards;will-change:transform,opacity}
+.ph-w1{animation-delay:.30s}
+.ph-w2{animation-delay:.50s;font-size:.55em;color:rgba(244,240,232,.78);letter-spacing:.04em}
+.ph-w3{animation-delay:.72s}
+.ph-em{color:var(--accent);text-shadow:0 4px 32px rgba(210,34,45,.4)}
+@keyframes phWordRise{0%{opacity:0;transform:translateY(110%) skew(0deg,2deg)}60%{opacity:1}100%{opacity:1;transform:translateY(0) skew(0,0)}}
+.ph-sub{font-family:var(--sans);font-size:clamp(16px,1.6vw,21px);line-height:1.55;color:rgba(244,240,232,.92);max-width:60ch;margin:0 auto;text-shadow:0 1px 8px rgba(0,0,0,.65)}
+.ph-sub em{font-style:normal;color:var(--gold);font-weight:600}
+
+/* Three-card portal grid */
+.pc-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,24px);padding:clamp(40px,6vh,72px) var(--frame-pad) clamp(72px,10vh,120px);max-width:var(--max);margin:0 auto;background:var(--bone)}
+.pc-card{position:relative;display:block;aspect-ratio:3/4;overflow:hidden;background:var(--ink);color:var(--bone);text-decoration:none;transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .4s;isolation:isolate;min-height:460px}
+.pc-card:hover{transform:translateY(-6px);box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
+.pc-img{position:absolute;inset:0;z-index:0}
+.pc-img img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.2,.7,.2,1);filter:saturate(.85) contrast(1.1) brightness(.7)}
+.pc-card:hover .pc-img img{transform:scale(1.08)}
+.pc-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.15) 35%,rgba(0,0,0,.65) 70%,rgba(0,0,0,.96) 100%)}
+.pc-train .pc-veil{background:linear-gradient(180deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.15) 35%,rgba(60,10,15,.7) 75%,rgba(0,0,0,.96) 100%)}
+.pc-alumni .pc-veil{background:linear-gradient(180deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.15) 35%,rgba(80,55,15,.65) 75%,rgba(0,0,0,.96) 100%)}
+.pc-events .pc-veil{background:linear-gradient(180deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.15) 35%,rgba(50,15,25,.72) 75%,rgba(0,0,0,.96) 100%)}
+.pc-body{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(28px,3.5vw,48px);gap:10px}
+.pc-eyebrow{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:rgba(244,240,232,.78);margin:0;font-weight:600}
+.pc-train .pc-eyebrow,.pc-events .pc-eyebrow{color:#f4a4ac}
+.pc-alumni .pc-eyebrow{color:var(--gold)}
+.pc-h{font-family:var(--display);font-size:clamp(48px,6.5vw,86px);line-height:.95;text-transform:uppercase;color:var(--bone);margin:0;text-shadow:0 2px 28px rgba(0,0,0,.55)}
+.pc-meta{font-family:var(--sans);font-size:clamp(13px,1.05vw,15px);line-height:1.55;color:rgba(244,240,232,.86);margin:0 0 6px;max-width:36ch;text-shadow:0 1px 8px rgba(0,0,0,.55)}
+.pc-cta{display:inline-flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--bone);border-top:1px solid rgba(244,240,232,.4);padding-top:16px;margin:6px 0 0;width:fit-content;font-weight:600}
+.pc-cta svg{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.pc-card:hover .pc-cta svg{transform:translateX(8px)}
+
+/* Meet Johnny */
+.meet-johnny{background:var(--bone-soft);border-top:1px solid var(--rule);padding:clamp(72px,11vh,120px) var(--frame-pad)}
+.mj-frame{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(40px,6vw,80px);align-items:center}
+.mj-photo{aspect-ratio:4/5;overflow:hidden;border-radius:0;background:var(--ink);position:relative}
+.mj-photo::after{content:"";position:absolute;inset:10px;border:1px solid rgba(255,255,255,.16);pointer-events:none;z-index:1}
+.mj-photo img{width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.05)}
+.mj-h{font-family:var(--display);font-weight:400;font-size:clamp(34px,4.4vw,58px);line-height:1.05;letter-spacing:-.005em;color:var(--ink);margin:18px 0 22px;text-transform:uppercase}
+.mj-h em{font-style:normal;color:var(--accent);font-size:.7em}
+.mj-lede{font-family:var(--sans);font-size:clamp(17px,1.5vw,20px);line-height:1.5;color:var(--ink);margin-bottom:18px;font-weight:500}
+.mj-bio{font-size:16px;line-height:1.7;color:var(--ink-soft);margin-bottom:24px;max-width:56ch}
+.mj-bio strong{color:var(--accent);font-weight:600}
+.mj-contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:14px 28px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:18px 0;margin:0 0 28px;max-width:680px}
+.mj-contact div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mj-contact dt{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-mute);font-weight:600}
+.mj-contact dd{font-family:var(--display);font-size:18px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;line-height:1.2;word-break:break-word}
+.mj-contact a{border-bottom:1px solid transparent;transition:border-color .25s,color .25s}
+.mj-contact a:hover{color:var(--accent);border-color:var(--accent)}
+.mj-cta-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.mj-cta-row .btn-ghost{color:var(--ink);border-color:var(--ink)}
+.mj-cta-row .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+@media (max-width:900px){
+  .pc-cards{grid-template-columns:1fr;gap:14px}
+  .pc-card{aspect-ratio:4/5;min-height:380px}
+  .mj-frame{grid-template-columns:1fr;gap:32px}
+  .mj-photo{max-width:380px;aspect-ratio:1/1;margin:0 auto}
+}
+@media (prefers-reduced-motion:reduce){
+  .ph-image img{animation:none}
+  .ph-word{opacity:1;transform:none;animation:none}
+}
+
+/* (legacy) Hero animation kept for any other pages still using .hero */
 .ht-1,.ht-2,.ht-3{display:block;opacity:0;transform:translateY(50px) skew(0deg,2deg);animation:wuwSlam 1.1s cubic-bezier(.2,.7,.2,1) forwards;will-change:transform,opacity}
 .ht-1{animation-delay:.15s}
 .ht-2{animation-delay:.55s}
