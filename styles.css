@@ -251,6 +251,10 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .rodz-body img{margin:24px 0;border-left:4px solid var(--accent)}
 .rodz-body a{color:var(--accent);border-bottom:1px solid currentColor}
 .rodz-body strong{color:var(--ink);font-weight:700}
+.rodz-body ul{margin:1em 0;padding-left:1.4em}
+.rodz-body ul li{margin-bottom:.5em;list-style:disc}
+.rodz-cta-line{font-family:var(--display);text-transform:uppercase;font-size:18px;letter-spacing:.06em;margin-top:36px;padding-top:24px;border-top:2px solid var(--accent);display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.rodz-cta-line a{color:var(--accent);border-bottom:2px solid currentColor;padding-bottom:2px}
 .col-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.55);font-weight:600}
 .col-h{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;letter-spacing:.04em}
 .col-contact p,.col-social p{font-size:14px;line-height:1.7;margin-bottom:6px}

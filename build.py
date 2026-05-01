@@ -201,9 +201,9 @@ def render_home():
       <h1 class="ph-title">
         <span class="ph-line"><span class="ph-word ph-w1">Train</span></span>
         <span class="ph-line"><span class="ph-word ph-w2">with the</span></span>
-        <span class="ph-line"><span class="ph-word ph-w3 ph-em">Hall of Famer</span></span>
+        <span class="ph-line"><span class="ph-word ph-w3 ph-em">Unpredictable</span></span>
       </h1>
-      <p class="ph-sub">Johnny Rodz — Brooklyn legend, WWE Hall of Fame Class of 1996, the trainer behind <em>Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich</em> and 400+ professional wrestlers.</p>
+      <p class="ph-sub"><em>Johnny "The Unpredictable" Rodz</em> — WWE Hall of Fame Class of 1996, MSG-circuit veteran, the Brooklyn trainer behind Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich and 400+ professional wrestlers.</p>
     </div>
   </section>
 
@@ -364,20 +364,45 @@ def render_news():
 
 def render_rodz():
     body = page_body('/johnny-rodz/')
-    return head("Johnny Rodz · WWE Hall of Famer · WUW Founder", "Johnny 'The Unpredictable' Rodz — born José Rodriguez. WWE Hall of Fame Class of 1996. Founder of World of Unpredictable Wrestling. Trained 400+ professional wrestlers including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.", 'https://wuwonline.com/johnny-rodz/') + f'''
+    bio_facts = '''
+<h2>The Career</h2>
+<p>Born <strong>José Rodriguez</strong> in New York City, Johnny &#8220;The Unpredictable&#8221; Rodz came up through Antonino &#8220;Argentina&#8221; Rocca&#8217;s school in the 1960s — one of the same lineages that produced an entire generation of Latino professional wrestlers in the New York territory.</p>
+<p>He spent <strong>nearly two decades</strong> on the World Wide Wrestling Federation / WWF roster, wrestling out of Madison Square Garden through the &#8217;70s and into the mid-&#8217;80s. He shared the ring with <strong>Bruno Sammartino, Bob Backlund, Pat Patterson, Tony Garea, Pedro Morales, Andre the Giant</strong> and most of the era&#8217;s headliners.</p>
+<p>His character was simple and unforgettable: <em>he&#8217;d do anything to win.</em> Eye rakes, foreign objects, refusing to break a hold — anything. The &#8220;unpredictable&#8221; nickname stuck because the audience genuinely never knew what he was about to pull. He was the <strong>blueprint for the heel-with-no-rules archetype</strong> that ECW and AEW would later make the centre of the sport.</p>
+<h2>WWE Hall of Fame · 1996</h2>
+<p>Inducted into the <strong>WWE Hall of Fame in 1996</strong> — the second class ever inducted, alongside Bobo Brazil, Ernie Ladd, Killer Kowalski and others. The induction recognised what the locker room had known for decades: that Rodz had spent his career making <em>other</em> people look like a million dollars, and that the business runs on people who can do exactly that.</p>
+<h2>The School at Gleason&#8217;s Gym</h2>
+<p>After hanging up the boots, Rodz turned full-time to training. He set up at <strong>Gleason&#8217;s Gym in Brooklyn</strong> — 130 Water Street, under the Brooklyn Bridge — the most storied athletic gym in the city, the same building that produced world-champion boxers for half a century.</p>
+<p>From that ring he&#8217;s trained <strong>over 400 professional wrestlers</strong> across four decades. The list reads like a who&#8217;s-who of late-&#8217;90s/&#8217;00s pro wrestling:</p>
+<ul>
+  <li><strong>Tazz</strong> &mdash; ECW World Heavyweight Champion, WWE</li>
+  <li><strong>Tommy Dreamer</strong> &mdash; ECW Hall of Fame, &#8220;Innovator of Violence&#8221;</li>
+  <li><strong>D-Von Dudley</strong> &mdash; WWE Hall of Fame, Dudley Boyz</li>
+  <li><strong>Big Cass</strong> (William Morrissey) &mdash; WWE main event run</li>
+  <li><strong>Masha Slamovich</strong> &mdash; TNA, WWE NXT</li>
+  <li><strong>Vince Russo</strong> &mdash; WCW &amp; WWE head writer</li>
+  <li><strong>Matt Striker</strong> &mdash; WWE commentator and wrestler</li>
+  <li><strong>Marti Belle, Prince Nana, Big Vito, Will Ferrara, Nicole Bass</strong> and 380+ more.</li>
+</ul>
+<h2>Why he matters</h2>
+<p>You can count the active full-time pro-wrestling trainers in the world on two hands. You can count the ones who are also <em>WWE Hall of Famers</em> on a single finger. The reason WUW alumni keep showing up on RAW, SmackDown, Dynamite and Impact isn&#8217;t because Rodz teaches a flashy moveset &mdash; it&#8217;s because he teaches the <strong>fundamentals</strong> the modern game forgot: bumping, ring psychology, story-telling, locker-room respect.</p>
+<p>If you&#8217;re serious about wrestling for a living, this is where it starts.</p>
+<p class="rodz-cta-line"><a href="/contact/">Train with Johnny &rarr;</a> &nbsp; · &nbsp; <a href="/alumni/">See the alumni roll &rarr;</a></p>
+'''
+    extra = body if body and len(body) > 200 else ''
+    return head("Johnny Rodz · WWE Hall of Famer · WUW Founder", "Johnny 'The Unpredictable' Rodz — born José Rodriguez. WWE Hall of Fame Class of 1996. Founder of World of Unpredictable Wrestling at Gleason's Gym Brooklyn. Trained 400+ professional wrestlers including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.", 'https://wuwonline.com/johnny-rodz/') + f'''
 <main class="page rodz-page">
   <section class="rodz-hero">
-    <picture class="rodz-hero-image" aria-hidden="true"><img src="/img/about.jpg" alt="" loading="eager"/></picture>
+    <picture class="rodz-hero-image" aria-hidden="true"><img src="/img/meet-johnny.jpg" alt="" loading="eager"/></picture>
     <div class="rodz-hero-veil"></div>
     <div class="rodz-hero-frame">
       <p class="ps-eyebrow">WWE Hall of Fame · Class of 1996</p>
       <h1 class="rodz-h">Johnny <em>"The Unpredictable"</em> Rodz</h1>
-      <p class="rodz-sub">Born José Rodriguez · Brooklyn legend · trainer of champions · founder of WUW.</p>
+      <p class="rodz-sub">Born José Rodriguez · MSG-circuit veteran · Brooklyn trainer · founder of WUW.</p>
     </div>
   </section>
-  <div class="page-frame rodz-body">
-    {body if body else '<p>Bio loading.</p>'}
-  </div>
+  <div class="page-frame rodz-body">{bio_facts}</div>
+  {('<section class="wp-extra"><div class="wp-extra-frame"><h2 class="wp-extra-h">Notes from the WUW archive</h2><div class="wp-extra-body">' + extra + '</div></div></section>') if extra else ''}
 </main>
 ''' + footer()
 
@@ -650,6 +675,10 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .rodz-body img{margin:24px 0;border-left:4px solid var(--accent)}
 .rodz-body a{color:var(--accent);border-bottom:1px solid currentColor}
 .rodz-body strong{color:var(--ink);font-weight:700}
+.rodz-body ul{margin:1em 0;padding-left:1.4em}
+.rodz-body ul li{margin-bottom:.5em;list-style:disc}
+.rodz-cta-line{font-family:var(--display);text-transform:uppercase;font-size:18px;letter-spacing:.06em;margin-top:36px;padding-top:24px;border-top:2px solid var(--accent);display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.rodz-cta-line a{color:var(--accent);border-bottom:2px solid currentColor;padding-bottom:2px}
 .col-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.55);font-weight:600}
 .col-h{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;letter-spacing:.04em}
 .col-contact p,.col-social p{font-size:14px;line-height:1.7;margin-bottom:6px}
