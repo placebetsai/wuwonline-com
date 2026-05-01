@@ -124,9 +124,8 @@ def head(title, desc, canonical):
 </head>
 <body>
 <header class="masthead" id="top">
-  <a class="wordmark" href="/" aria-label="WUW">
-    <span class="wm-mark">WUW</span>
-    <span class="wm-tag">World Of Unpredictable Wrestling</span>
+  <a class="wordmark" href="/" aria-label="WUW — World Of Unpredictable Wrestling">
+    <img src="/img/logo.png" alt="WUW — World Of Unpredictable Wrestling" class="wm-logo" />
   </a>
   <nav class="primary" aria-label="Primary">
     <a href="/about/">About</a>
@@ -162,7 +161,7 @@ def footer():
     return f'''
 <footer class="colophon">
   <div class="colophon-frame">
-    <div class="col-brand"><span class="col-mark">WUW</span><span class="col-tag">World Of Unpredictable Wrestling · est. 2016</span></div>
+    <div class="col-brand"><img src="/img/logo.png" alt="WUW" class="col-logo" /><span class="col-tag">World Of Unpredictable Wrestling · est. 2016</span></div>
     <div class="col-contact">
       <p class="col-h">Train · Brooklyn</p>
       <p><a href="tel:7187972872">{PHONE}</a></p>
@@ -350,7 +349,7 @@ body{background:var(--bone);color:var(--ink);font-family:var(--sans);font-size:1
 img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list-style:none}
 .masthead{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px var(--frame-pad);z-index:50;color:var(--bone);background:rgba(10,10,10,.96);border-bottom:2px solid var(--accent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .wordmark{display:inline-flex;align-items:center;gap:14px;color:var(--bone)}
-.wm-mark{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:.04em}
+.wm-logo{height:46px;width:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
 .wm-tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.6);font-weight:600}
 .primary{display:flex;gap:clamp(10px,1.4vw,20px);font-family:var(--display2);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
 .primary a{color:#efebe3;padding:8px 4px;transition:color .25s}
@@ -503,6 +502,7 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .colophon{background:#000;color:var(--bone)}
 .colophon-frame{max-width:var(--max);margin:0 auto;padding:64px var(--frame-pad);display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;align-items:start}
 .col-mark{font-family:var(--display);font-size:48px;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px}
+.col-logo{height:80px;width:auto;display:block;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
 .col-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.55);font-weight:600}
 .col-h{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;letter-spacing:.04em}
 .col-contact p,.col-social p{font-size:14px;line-height:1.7;margin-bottom:6px}
