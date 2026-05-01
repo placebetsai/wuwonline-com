@@ -75,9 +75,13 @@ def rewrite(body):
     return body.strip()
 
 def page_body(slug_path):
+    target = slug_path.rstrip('/')
     for q in all_pages:
-        path = '/' + q['url'].split('://')[1].split('/',1)[1] if '://' in q['url'] else ''
-        if path.rstrip('/') == slug_path.rstrip('/'):
+        url = q.get('url', '')
+        if '://' not in url: continue
+        parts = url.split('://')[1].split('/', 1)
+        path = '/' + parts[1] if len(parts) > 1 else '/'
+        if path.rstrip('/') == target:
             return rewrite(q.get('body_html', ''))
     return ''
 
