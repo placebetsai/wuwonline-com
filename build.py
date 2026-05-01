@@ -1,536 +1,499 @@
 #!/usr/bin/env python3
-"""
-Static-site builder for israeljoffe.com / israeljoffe.org
-Reads _data/posts.json + _data/img-map.json
-Renders /index.html, /press/, /writing/, /archive/, and /YYYY/MM/DD/slug/index.html
-Replaces external image URLs with local /img/ paths.
-"""
-import os, json, re, sys, html, shutil
-from datetime import datetime
-from collections import Counter
-from urllib.parse import urlparse
+"""WUW site builder - World of Unpredictable Wrestling / Johnny Rodz @ Gleason's Gym, Brooklyn."""
+import os, json, re, html as H
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-SITE_HOST = os.environ.get('SITE_HOST', 'israeljoffe.com')  # override per site
-ACCENT = os.environ.get('ACCENT', '#c08a3e')  # gold for .com, override for .org
-TAGLINE = os.environ.get('TAGLINE', 'Media Executive · IT Specialist · Firefighter · Animal Lover · FDIC')
-HERO_LINE_1 = os.environ.get('HERO_LINE_1', 'Israel')
-HERO_LINE_2 = os.environ.get('HERO_LINE_2', 'Joffe.')
-
 all_pages = json.load(open(f'{ROOT}/_data/posts.json'))
 img_map = json.load(open(f'{ROOT}/_data/img-map.json'))
 
-# Posts = dated entries, displayed in archive/grid
+PHONE = '718-797-2872'
+ADDR_LINE_1 = "Gleason's Gym · 130 Water Street"
+ADDR_LINE_2 = 'Brooklyn, NY 11201 · Under the Brooklyn Bridge'
+EMAIL = 'Johnnyrodz41@gmail.com'
+
+ALUMNI = [
+    ('Taz', 'WWE · ECW Hall of Famer'),
+    ('Tommy Dreamer', 'ECW / WWE Hall of Famer'),
+    ('D-Von Dudley', 'WWE Hall of Famer'),
+    ('Big Cass', 'William Morrissey · WWE'),
+    ('Masha Slamovich', 'TNA · WWE NXT'),
+    ('Marti Belle', 'TNA Impact Wrestling'),
+    ('Vince Russo', 'WCW / WWE Head Writer'),
+    ('Matt Striker', 'WWE Commentator & Wrestler'),
+    ('Prince Nana', 'ROH · AEW'),
+    ('Nicole Bass', 'WWF · ECW'),
+    ('Big Vito', 'WCW · WWE'),
+    ('Phantasio', 'WWF'),
+    ('Rocco Rock', 'ECW · Public Enemy'),
+    ('SD Jones', 'WWF Veteran'),
+    ('Big Sal Graziano', 'F.B.I. · ECW'),
+    ('Will Ferrara', 'Kid Spartan · WWE NXT'),
+    ('MJ Jenkins', 'Lady Mojo · WUW Legend'),
+    ('Maurice Wingboy Martin', 'TNA Impact Wrestling'),
+]
+ROSTER = ['Irish Bruce', 'Stephanie', 'Christian Andrews', 'Big Al', 'Sir Robert Taylor Jr',
+          'Adam Bailey', 'Kid Eric', 'Carlos Billetes (Fireball)', 'Gary Post', 'King Broadway of Prussia',
+          'Jada Rose', 'J Bushii', 'PJ Savage', 'Jesse Lebron', 'The Faceless Ones']
+CREDENTIALS = [
+    ('1996', 'WWE Hall of Fame', 'Class of 1996 — Johnny "The Unpredictable" Rodz'),
+    ('400+', 'Wrestlers Trained', 'Across WWE, NXT, AEW, Impact, ROH'),
+    ('1980s', 'Active Trainer', "Johnny Rodz @ Gleason's Gym — four decades"),
+]
+SCHEDULE = [('Mon · Tue · Thu', '3:00 PM – 9:30 PM'), ('Saturday', '12:00 PM – 5:30 PM')]
+
 posts = [p for p in all_pages if p.get('date')]
 posts.sort(key=lambda p: p['date'], reverse=True)
-# Pages = ALL crawled (used for backlink aggregation, since DC links live in undated pages too)
 
-def rewrite_imgs(body):
-    """Replace external image URLs with local /img/ versions."""
-    def sub(m):
-        url = m.group(1).split('?')[0]
-        local = img_map.get(url, m.group(1))
-        return f'src="{local}"'
-    return re.sub(r'src="(https?://[^"]+\.(?:jpe?g|png|webp|gif))[^"]*"', sub, body, flags=re.I)
+def collect_links_filter(predicate):
+    seen, out = set(), []
+    for p in all_pages:
+        for L in p.get('external_links', []):
+            if predicate(L) and L['url'] not in seen:
+                seen.add(L['url'])
+                src = '/' + p['url'].split('://')[1].split('/',1)[1].rstrip('/') + '/' if 'wuwonline.com' in p['url'] else '/'
+                out.append({'url': L['url'], 'anchor': L['anchor'] or L['host'], 'source': src})
+    return out
 
-def absolute_to_internal(body):
-    """Internal absolute links -> relative paths (preserves structure)."""
-    body = re.sub(r'href="https?://(?:www\.)?israeljoffe\.(?:com|org)([^"]*)"', r'href="\1"', body)
-    return body
+mnw_links = collect_links_filter(lambda L: 'mondaynightwrestling.com' in L['url'])
+press_links = collect_links_filter(lambda L: any(h in L['url'] for h in ['fox5ny.com', 'fox29.com', 'newsweek.com', 'newsbreak.com', 'gettyimages']))
+yt_spotify_links = collect_links_filter(lambda L: any(h in L['url'] for h in ['youtu.be', 'youtube.com/watch', 'spotify.com/episode']))
 
-def clean_body(body):
+def post_url(p):
+    return '/' + p['url'].split('://')[1].split('/',1)[1].rstrip('/') + '/'
+
+def rewrite(body):
     if not body: return ''
-    body = rewrite_imgs(body)
-    body = absolute_to_internal(body)
-    # Strip WP injected scripts and noisy buttons
-    body = re.sub(r'<div[^>]*class="[^"]*sd-block[^"]*"[^>]*>.*?</div>', '', body, flags=re.S | re.I)
-    body = re.sub(r'<div[^>]*class="[^"]*jp-relatedposts[^"]*"[^>]*>.*?</div>', '', body, flags=re.S | re.I)
+    body = re.sub(r'src="(https?://[^"]+\.(?:jpe?g|png|webp|gif))[^"]*"',
+                  lambda m: f'src="{img_map.get(m.group(1).split("?")[0], m.group(1))}"', body, flags=re.I)
+    body = re.sub(r'href="https?://(?:www\.)?wuwonline\.com([^"]*)"', r'href="\1"', body)
+    body = re.sub(r'<div[^>]*class="[^"]*sharedaddy[^"]*"[^>]*>.*?</div>\s*</div>', '', body, flags=re.S | re.I)
     body = re.sub(r'<style[^>]*>.*?</style>', '', body, flags=re.S | re.I)
     return body.strip()
 
-def fmt_date(iso):
-    try:
-        return datetime.strptime(iso, '%Y-%m-%d').strftime('%B %-d, %Y')
-    except: return iso
-
-def post_url(p):
-    return '/' + p['url'].split('://')[1].split('/', 1)[1].rstrip('/') + '/'
-
-# --- Aggregate external links across ALL crawled pages (not just dated posts) ---
-ext_by_host = {}  # host -> [{url, anchor, source_post_url, source_post_title, date}]
-for p in all_pages:
-    src = post_url(p) if p.get('date') else (p['url'].replace('https://israeljoffe.com', '').replace('https://israeljoffe.org', '') or '/')
-    for L in p.get('external_links', []):
-        host = L['host']
-        if not host: continue
-        ext_by_host.setdefault(host, []).append({
-            'url': L['url'], 'anchor': L['anchor'] or host, 'source': src,
-            'source_title': p['title'], 'date': p.get('date',''),
-        })
-
-# Pick out featured groups
-documentcloud = []
-substack = []
-press = []
-PRESS_HOSTS = {
-    'fox5ny.com': 'Fox 5 News', 'newsweek.com': 'Newsweek', 'fox29.com': 'Fox 29',
-    'original.newsbreak.com': 'NewsBreak', 'newsbreak.com': 'NewsBreak',
-    'gettyimages.ca': 'Getty Images', 'gettyimages.com': 'Getty Images',
-    'mondaynightwrestling.com': 'Monday Night Wrestling',
-    'muckrack.com': 'Muck Rack',
-}
-def dedupe_keep_best(items):
-    """Dedupe by URL-without-querystring, keep entry with longest non-URL anchor."""
-    by_key = {}
-    for it in items:
-        k = it['url'].split('?')[0].rstrip('/')
-        prev = by_key.get(k)
-        # Prefer entry whose anchor is descriptive text, not just the URL
-        cur_anchor_quality = 0 if it['anchor'].startswith('http') else len(it['anchor'])
-        prev_anchor_quality = 0 if prev and prev['anchor'].startswith('http') else (len(prev['anchor']) if prev else -1)
-        if not prev or cur_anchor_quality > prev_anchor_quality:
-            by_key[k] = it
-    return list(by_key.values())
-
-for host, items in ext_by_host.items():
-    if 'documentcloud' in host:
-        documentcloud.extend(dedupe_keep_best(items))
-    elif 'substack' in host:
-        substack.extend(dedupe_keep_best(items))
-    elif host in PRESS_HOSTS:
-        for it in dedupe_keep_best(items):
-            it['outlet'] = PRESS_HOSTS[host]
-            press.append(it)
-
-# Final pass: dedupe across hosts (e.g. multiple substack subdomains)
-documentcloud = dedupe_keep_best(documentcloud)
-substack = dedupe_keep_best(substack)
-
-# --- Templates ---
-def head(title, desc, canonical, og_image=None):
-    og = og_image or f'https://{SITE_HOST}/img/og-default.jpg'
-    return f'''<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>{html.escape(title)}</title>
-<meta name="description" content="{html.escape(desc)}" />
-<meta name="theme-color" content="#0e0e0e" />
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-<link rel="canonical" href="{canonical}" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<meta property="og:type" content="website" />
-<meta property="og:title" content="{html.escape(title)}" />
-<meta property="og:description" content="{html.escape(desc)}" />
-<meta property="og:url" content="{canonical}" />
-<meta property="og:site_name" content="Israel Joffe" />
-<meta property="og:image" content="{og}" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="{og}" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=BUILD" />
+def head(title, desc, canonical):
+    og = 'https://wuwonline.com/img/og-default.jpg'
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>{H.escape(title)}</title>
+<meta name="description" content="{H.escape(desc)}"/>
+<meta name="keywords" content="Johnny Rodz, WWE Hall of Fame, professional wrestling training Brooklyn, Gleason's Gym, Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich, learn pro wrestling NYC, WUW, World of Unpredictable Wrestling"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<meta name="robots" content="index, follow, max-image-preview:large"/>
+<meta name="geo.region" content="US-NY"/>
+<meta name="geo.placename" content="Brooklyn, New York"/>
+<link rel="canonical" href="{canonical}"/>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="{H.escape(title)}"/>
+<meta property="og:description" content="{H.escape(desc)}"/>
+<meta property="og:url" content="{canonical}"/>
+<meta property="og:site_name" content="World of Unpredictable Wrestling"/>
+<meta property="og:image" content="{og}"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="{og}"/>
+<meta name="twitter:site" content="@Rodzjohnny"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/styles.css?v=BUILD"/>
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":["LocalBusiness","Organization","EducationalOrganization"],"name":"World of Unpredictable Wrestling","alternateName":["WUW"],"description":"Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz at Gleason's Gym.","url":"https://wuwonline.com/","telephone":"+1-718-797-2872","email":"{EMAIL}","address":{{"@type":"PostalAddress","streetAddress":"130 Water Street","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11201","addressCountry":"US"}},"founder":{{"@type":"Person","name":"Johnny Rodz","alternateName":"Johnny The Unpredictable Rodz","jobTitle":"Professional Wrestling Trainer","award":"WWE Hall of Fame, Class of 1996","birthName":"Jose Rodriguez"}},"openingHoursSpecification":[{{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Thursday"],"opens":"15:00","closes":"21:30"}},{{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"17:30"}}],"sameAs":["https://twitter.com/Rodzjohnny","https://www.facebook.com/WorldofUnpredictableWrestling"]}}
+</script>
 </head>
 <body>
-<div class="grain" aria-hidden="true"></div>
 <header class="masthead" id="top">
-  <a class="wordmark" href="/" aria-label="Israel Joffe — home">
-    <span class="wm-italic">Israel</span><span class="wm-roman">Joffe</span>
+  <a class="wordmark" href="/" aria-label="WUW">
+    <span class="wm-mark">WUW</span>
+    <span class="wm-tag">World Of Unpredictable Wrestling</span>
   </a>
   <nav class="primary" aria-label="Primary">
-    <a href="/">Home</a>
     <a href="/about/">About</a>
-    <a href="/writing/">Writing</a>
-    <a href="/press/">Press</a>
-    <a href="/archive/">Archive</a>
+    <a href="/alumni/">Alumni</a>
+    <a href="/roster/">Roster</a>
+    <a href="/title-holders/">Champions</a>
+    <a href="/events/">Events</a>
+    <a href="/in-the-news/">News</a>
+    <a href="/contact/" class="primary-cta">Train</a>
   </nav>
-  <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span><span></span></button>
 </header>
 <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
   <nav class="mobile-nav-inner" aria-label="Mobile primary">
     <a href="/">Home</a>
     <a href="/about/">About</a>
-    <a href="/writing/">Writing</a>
-    <a href="/press/">Press</a>
-    <a href="/archive/">Archive</a>
+    <a href="/alumni/">Alumni</a>
+    <a href="/roster/">Roster</a>
+    <a href="/title-holders/">Champions</a>
+    <a href="/events/">Events</a>
+    <a href="/in-the-news/">News</a>
+    <a href="/contact/">Train · Contact</a>
+    <div class="mobile-nav-fine">
+      <a href="tel:7187972872">{PHONE}</a>
+      <a href="mailto:{EMAIL}">{EMAIL}</a>
+    </div>
   </nav>
 </div>
 '''
 
 def footer():
-    # Quiet backlinks footer — DocumentCloud + extra references for SEO
-    dc_links = ''.join(f'<a href="{html.escape(it["url"])}" rel="noopener" target="_blank">{html.escape(it["anchor"][:32]) or "ref"}</a>' for it in documentcloud)
+    bg_links = ''.join(f'<a href="{H.escape(L["url"])}" rel="noopener" target="_blank">{H.escape(L["anchor"][:40]) or "ref"}</a>' for L in mnw_links + yt_spotify_links)
     return f'''
 <footer class="colophon">
   <div class="colophon-frame">
-    <div class="colophon-brand">
-      <span class="colophon-mark"><em>Israel</em>Joffe</span>
-      <span class="colophon-tag">{html.escape(TAGLINE)}</span>
+    <div class="col-brand"><span class="col-mark">WUW</span><span class="col-tag">World Of Unpredictable Wrestling · est. 2016</span></div>
+    <div class="col-contact">
+      <p class="col-h">Train · Brooklyn</p>
+      <p><a href="tel:7187972872">{PHONE}</a></p>
+      <p><a href="mailto:{EMAIL}">{EMAIL}</a></p>
+      <p>{ADDR_LINE_1}<br>{ADDR_LINE_2}</p>
     </div>
-    <div class="colophon-meta">
-      <p><a href="https://twitter.com/israeljoffe" target="_blank" rel="noopener me">Twitter</a></p>
-      <p><a href="https://www.linkedin.com/in/israeljoffe" target="_blank" rel="noopener me">LinkedIn</a></p>
-      <p><a href="https://www.instagram.com/israeljoffe" target="_blank" rel="noopener me">Instagram</a></p>
-      <p><a href="https://muckrack.com/israel-joffe_" target="_blank" rel="noopener me">Muck Rack</a></p>
-      <p><a href="https://israeljoffe.substack.com" target="_blank" rel="noopener me">Substack</a></p>
-    </div>
-    <div class="colophon-fine">
-      <p>© <span id="year">2026</span> Israel Joffe. All rights reserved.</p>
+    <div class="col-social">
+      <p class="col-h">Follow</p>
+      <p><a href="https://twitter.com/Rodzjohnny" target="_blank" rel="noopener me">Twitter · @Rodzjohnny</a></p>
+      <p><a href="https://www.facebook.com/WorldofUnpredictableWrestling" target="_blank" rel="noopener me">Facebook</a></p>
     </div>
   </div>
-  <nav class="bg-refs" aria-label="Referenced documents">
-    {dc_links}
-  </nav>
+  <div class="col-fine"><p>© <span id="year">2026</span> World of Unpredictable Wrestling. All rights reserved.</p><p>Founded by Johnny Rodz · WWE Hall of Fame Class of 1996</p></div>
+  <nav class="bg-refs" aria-label="Press references">{bg_links}</nav>
 </footer>
 <script>document.getElementById("year").textContent=new Date().getFullYear();
 (function(){{const t=document.querySelector(".menu-toggle"),d=document.getElementById("mobile-nav"),b=document.body;if(!t||!d)return;t.addEventListener("click",()=>{{const o=b.classList.toggle("menu-open");t.setAttribute("aria-expanded",o);d.setAttribute("aria-hidden",!o);}});document.querySelectorAll('.mobile-nav a').forEach(a=>a.addEventListener("click",()=>b.classList.remove("menu-open")));}})();
 </script>
 </body></html>'''
 
-def render_post(p):
-    body = clean_body(p['body_html'])
-    hero = p.get('hero')
-    if hero:
-        local = img_map.get(hero.split('?')[0], hero)
-        og = f'https://{SITE_HOST}{local}'
-    else:
-        og = None
-    canonical = f'https://{SITE_HOST}{post_url(p)}'
-    desc = (p.get('description') or html.unescape(re.sub(r'<[^>]+>', ' ', body)).strip())[:200] or p['title']
-    h = head(p['title'] + ' · Israel Joffe', desc, canonical, og)
-    article = f'''
-<main class="post-page">
-  <article class="post">
-    <header class="post-head">
-      <p class="post-date">{fmt_date(p['date'])}</p>
-      <h1 class="post-title">{html.escape(p['title'])}</h1>
-    </header>
-    <div class="post-body">{body}</div>
-    <footer class="post-foot">
-      <p><a href="/" class="link-back">← Home</a> · <a href="/archive/" class="link-back">Archive</a></p>
-    </footer>
-  </article>
-</main>
-'''
-    return h + article + footer()
-
-def render_index():
-    recent = posts[:18]
-    canonical = f'https://{SITE_HOST}/'
-    desc = TAGLINE + '. ' + str(len(posts)) + ' posts since 2020.'
-    h = head('Israel Joffe — ' + TAGLINE, desc, canonical, f'https://{SITE_HOST}/img/og-default.jpg')
-    cards = ''
-    for p in recent:
-        hero = img_map.get((p.get('hero') or '').split('?')[0], p.get('hero') or '')
-        cards += f'''
-    <a class="grid-card" href="{post_url(p)}">
-      <div class="gc-img">{f'<img src="{html.escape(hero)}" alt="" loading="lazy" />' if hero else ''}</div>
-      <div class="gc-meta">
-        <p class="gc-date">{fmt_date(p['date'])}</p>
-        <h3 class="gc-title">{html.escape(p['title'])}</h3>
-      </div>
-    </a>'''
-    main = f'''
+def render_home():
+    canonical = 'https://wuwonline.com/'
+    title = 'WUW · Train with Johnny Rodz — WWE Hall of Famer · Brooklyn'
+    desc = "Train pro wrestling at Gleason's Gym Brooklyn with Johnny Rodz, WWE Hall of Famer (Class of 1996). 400+ wrestlers trained including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich. Call 718-797-2872."
+    alumni_strip = ' · '.join(f'<span class="al-name">{n}</span>' for n, _ in ALUMNI[:9])
+    creds = ''.join(f'<div class="cred"><span class="cr-num">{n}</span><span class="cr-h">{h}</span><span class="cr-d">{d}</span></div>' for n, h, d in CREDENTIALS)
+    return head(title, desc, canonical) + f'''
 <main class="home">
   <section class="hero">
-    <picture class="hero-image" aria-hidden="true"><img src="/img/hero.jpg" alt="" loading="eager" /></picture>
+    <picture class="hero-image" aria-hidden="true"><img src="/img/hero.jpg" alt="" loading="eager"/></picture>
     <div class="hero-veil"></div>
     <div class="hero-frame">
-      <p class="hero-eyebrow"><span class="rule"></span><span>{html.escape(TAGLINE)}</span></p>
+      <p class="hero-eyebrow"><span>Brooklyn, NY</span><span class="dot"></span><span>Gleason's Gym</span><span class="dot"></span><span>Est. 1980s</span></p>
       <h1 class="hero-title">
-        <span class="hl-line"><span class="hl-word">{HERO_LINE_1}</span></span>
-        <span class="hl-line"><span class="hl-word hl-em">{HERO_LINE_2}</span></span>
+        <span class="ht-1">Train</span>
+        <span class="ht-2">with</span>
+        <span class="ht-3"><em>Johnny Rodz</em></span>
       </h1>
-      <p class="hero-sub">A media executive, IT specialist, firefighter, and writer based in New York.<br>
-      Featured in Fox 5, Newsweek, Fox 29, NewsBreak.</p>
+      <p class="hero-sub">WWE Hall of Famer · 400+ professional wrestlers trained · the man who built Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.</p>
       <div class="hero-cta-row">
-        <a class="link-cta on-image" href="/writing/"><span>Read the writing</span></a>
-        <a class="link-fine on-image" href="/press/"><span class="dot"></span>Press &amp; mentions</a>
+        <a class="btn-primary" href="/contact/">Start Training Today</a>
+        <a class="btn-ghost" href="tel:7187972872">📞 {PHONE}</a>
       </div>
     </div>
   </section>
-  <section class="press-strip" aria-label="As featured in">
-    <p class="ps-eyebrow">As featured in</p>
-    <div class="ps-row">
-      <a href="/press/#fox5ny.com">Fox 5 News</a>
-      <a href="/press/#newsweek.com">Newsweek</a>
-      <a href="/press/#fox29.com">Fox 29</a>
-      <a href="/press/#newsbreak.com">NewsBreak</a>
-      <a href="/press/#mondaynightwrestling.com">Monday Night Wrestling</a>
-      <a href="/press/#muckrack.com">Muck Rack</a>
+  <section class="alumni-strip" aria-label="Alumni"><p class="ps-eyebrow">A few of the 400+ trained at WUW</p><div class="al-row">{alumni_strip}</div><p class="al-more"><a href="/alumni/">See the full alumni list →</a></p></section>
+  <section class="creds"><h2 class="sec-h">The Credentials</h2><div class="cred-grid">{creds}</div></section>
+  <section class="learn"><div class="lr-grid">
+    <div class="lr-img"><img src="/img/about.jpg" alt="Training at Gleason's Gym" loading="lazy"/></div>
+    <div class="lr-body">
+      <p class="ps-eyebrow">What you learn</p>
+      <h2 class="sec-h">Real training. Real fundamentals.</h2>
+      <ul class="lr-list">
+        <li><strong>Ring fundamentals</strong> — bumping, rolling, holds, counters.</li>
+        <li><strong>Ring psychology</strong> — how to tell a story in real time.</li>
+        <li><strong>Cardio &amp; conditioning</strong> — what it takes to last.</li>
+        <li><strong>Promo &amp; mic work</strong> — your character on the microphone.</li>
+        <li><strong>Match construction</strong> — building the high spots and the calls.</li>
+      </ul>
+      <p><a class="link-cta" href="/about/">More about WUW →</a></p>
     </div>
-  </section>
-  <section class="recent">
-    <header class="section-head"><h2 class="section-title">Recent</h2><a class="section-more" href="/archive/">All {len(posts)} posts →</a></header>
-    <div class="grid">{cards}
+  </div></section>
+  <section class="contact-cta">
+    <h2 class="sec-h">Ready to step in the ring?</h2>
+    <p class="cc-sub">Open to everyone — men and women, all experience levels.<br>If you're serious about a career in pro wrestling, this is where it starts.</p>
+    <div class="cc-grid">
+      <div class="cc-card"><p class="cc-h">📞 Call</p><p class="cc-v"><a href="tel:7187972872">{PHONE}</a></p><p class="cc-d">Ask for Johnny Rodz</p></div>
+      <div class="cc-card"><p class="cc-h">📍 Where</p><p class="cc-v">{ADDR_LINE_1}</p><p class="cc-d">{ADDR_LINE_2}</p></div>
+      <div class="cc-card"><p class="cc-h">📅 Schedule</p>{''.join(f'<p class="cc-v sm">{d}</p><p class="cc-d">{t}</p>' for d, t in SCHEDULE)}</div>
     </div>
   </section>
 </main>
-'''
-    return h + main + footer()
+''' + footer()
 
-def render_archive():
-    canonical = f'https://{SITE_HOST}/archive/'
-    h = head('Archive · Israel Joffe', f'All {len(posts)} posts on israeljoffe.{SITE_HOST.split(".")[-1]} since 2020.', canonical)
-    by_year = {}
-    for p in posts: by_year.setdefault(p['date'][:4], []).append(p)
-    yrs = ''
-    for yr in sorted(by_year, reverse=True):
-        items = ''.join(f'<li><a href="{post_url(p)}"><span class="ar-d">{fmt_date(p["date"])}</span><span class="ar-t">{html.escape(p["title"])}</span></a></li>' for p in by_year[yr])
-        yrs += f'<section class="ar-year"><h2 class="ar-h">{yr}</h2><ol class="ar-list">{items}</ol></section>'
-    main = f'<main class="archive-page"><div class="page-frame"><header class="section-head"><h1 class="section-title">Archive</h1><p>{len(posts)} posts since 2020.</p></header>{yrs}</div></main>'
-    return h + main + footer()
+def render_alumni():
+    cards = ''.join(f'<article class="al-card"><h3>{H.escape(n)}</h3><p>{H.escape(c)}</p></article>' for n, c in ALUMNI)
+    return head('WUW Alumni · 400+ Trained by Johnny Rodz', "Alumni include Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich, Marti Belle, Vince Russo, Matt Striker. 400+ professional wrestlers trained at Gleason's Gym Brooklyn.", 'https://wuwonline.com/alumni/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">{len(ALUMNI)}+ featured · 400+ trained total</p><h1 class="page-h">Alumni</h1><p class="page-lede">Trained by Johnny Rodz at Gleason's Gym — went on to headline WWE, WCW, ECW, TNA, AEW, Impact, and beyond.</p></header>
+  <section class="memorial"><p class="me-cross">✝ In Loving Memory</p><h2>Charles Juan Jeremy Perez</h2><p>Brother · Trainer · WUW Family. The heart and soul of WUW. His spirit, heart, and love for this sport will never be forgotten. Rest easy, brother.</p></section>
+  <div class="al-grid">{cards}</div>
+</div></main>
+''' + footer()
 
-def render_press():
-    canonical = f'https://{SITE_HOST}/press/'
-    h = head('Press & Mentions · Israel Joffe', 'Press coverage of Israel Joffe in Fox 5 News, Newsweek, Fox 29, NewsBreak, Monday Night Wrestling, Getty Images, and more.', canonical)
-    by_outlet = {}
-    for it in press: by_outlet.setdefault(it['outlet'], []).append(it)
-    sections = ''
-    for outlet, items in sorted(by_outlet.items(), key=lambda x: -len(x[1])):
-        host = next((h for h, name in PRESS_HOSTS.items() if name == outlet), '')
-        rows = ''.join(f'<li><a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{html.escape(it["anchor"]) or outlet}</a><span class="pr-src">via <a href="{it["source"]}">{html.escape(it["source_title"])}</a></span></li>' for it in items)
-        sections += f'<section class="pr-outlet" id="{host}"><h2>{outlet}</h2><ol class="pr-list">{rows}</ol></section>'
-    main = f'<main class="press-page"><div class="page-frame"><header class="section-head"><p class="eyebrow">As featured in</p><h1 class="section-title">Press &amp; Mentions</h1><p>{len(press)} citations across {len(by_outlet)} outlets.</p></header>{sections}</div></main>'
-    return h + main + footer()
+def render_roster():
+    items = ''.join(f'<li>{H.escape(n)}</li>' for n in ROSTER)
+    return head('Current Roster · WUW Brooklyn', "Current WUW roster — wrestlers training at Gleason's Gym Brooklyn under Johnny Rodz.", 'https://wuwonline.com/roster/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Active roster</p><h1 class="page-h">Roster</h1><p class="page-lede">The wrestlers training and competing under WUW today.</p></header>
+  <ul class="roster-list">{items}</ul>
+  <p class="rl-foot">Want to see your name here? <a href="/contact/" class="link-cta">Start training →</a></p>
+</div></main>
+''' + footer()
 
-def render_writing():
-    canonical = f'https://{SITE_HOST}/writing/'
-    h = head('Writing · Israel Joffe', 'Substack and long-form writing by Israel Joffe.', canonical)
-    sb_rows = ''.join(f'<li><a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{html.escape(it["anchor"]) or "Substack post"}</a><span class="pr-src">via <a href="{it["source"]}">{html.escape(it["source_title"])}</a></span></li>' for it in substack)
-    main = f'''<main class="press-page">
-<div class="page-frame">
-  <header class="section-head">
-    <p class="eyebrow">Writing</p>
-    <h1 class="section-title">Writing</h1>
-    <p>Long-form on Substack.</p>
-  </header>
-  <section class="pr-outlet" id="substack"><h2>Substack</h2><ol class="pr-list">{sb_rows}</ol></section>
-</div>
-</main>'''
-    return h + main + footer()
+def render_titles():
+    titles = [
+        ('WUW World Heavyweight', 'PJ Savage'), ('WUW Womens Championship', 'Jada Rose'),
+        ('WUW Light Heavyweight', 'J Bushii'), ('WUW NY State', 'Jesse Lebron of Distrubia'),
+        ('WUW North American', 'The Fireball Carlos'), ('WUW Tag Team', 'The Faceless Ones'),
+        ('WUW Rumbo in DUMBO', 'Irish Bruce'),
+    ]
+    rows = ''.join(f'<li><span class="tt-belt">{H.escape(b)}</span><span class="tt-holder">{H.escape(h)}</span></li>' for b, h in titles)
+    return head('WUW Champions · Title Holders', 'Current WUW championship title holders across all divisions.', 'https://wuwonline.com/title-holders/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Titleholders</p><h1 class="page-h">Champions</h1></header>
+  <ul class="title-list">{rows}</ul>
+  <p class="rl-foot small">Note: as of 4/23/22 some titles are vacant pending the next set of shows.</p>
+</div></main>
+''' + footer()
+
+def render_events():
+    return head('WUW Events · Live Pro Wrestling Brooklyn', "Live professional wrestling shows from WUW — featuring wrestlers trained by Johnny Rodz at Gleason's Gym Brooklyn.", 'https://wuwonline.com/events/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Live shows</p><h1 class="page-h">Events</h1><p class="page-lede">Showcases for the wrestlers trained by Johnny Rodz — full storylines, championship matches, and special guests.</p></header>
+  <section class="ev-card"><h2>Stay current on dates</h2><p>Follow WUW on Facebook for upcoming event dates, venues, and results.</p><a class="btn-primary" href="https://www.facebook.com/WorldofUnpredictableWrestling" target="_blank" rel="noopener">Follow on Facebook</a></section>
+  <section class="ev-card"><h2>Want to compete?</h2><p>Train with Johnny Rodz and earn your spot on a WUW card.</p><a class="btn-primary" href="/contact/">Start Training</a></section>
+  <section class="ev-card"><h2>Bookings &amp; sponsorships</h2><p>For event bookings, sponsorship, or to work with WUW talent — call <a href="tel:7187972872">{PHONE}</a>.</p></section>
+</div></main>
+''' + footer()
 
 def render_about():
-    canonical = f'https://{SITE_HOST}/about/'
-    h = head('About · Israel Joffe', 'Israel Joffe — Media Executive, IT Specialist, Firefighter, BJJ practitioner, and writer based in New York.', canonical)
-    main = f'''<main class="about-page">
-<div class="page-frame about-frame">
-  <div class="ap-photo"><img src="/img/about.jpg" alt="Israel Joffe" loading="lazy" /></div>
-  <div class="ap-body">
-    <p class="eyebrow">About</p>
-    <h1 class="section-title">Israel Joffe</h1>
-    <p class="ap-lede"><em>Media Executive · Senior IT Specialist · Firefighter · World traveler · Writer.</em></p>
-    <p>Israel Joffe is a New York–based media executive and IT specialist whose work has appeared in Fox 5, Newsweek, Fox 29, NewsBreak, and across the Monday Night Wrestling and World Of Unpredictable Wrestling networks. He writes on documents archived at DocumentCloud and on Substack.</p>
-    <p>Outside the desk: Brazilian Jiu-Jitsu practitioner, fitness obsessive, traveler, dog person.</p>
+    return head("About WUW · Johnny Rodz · Gleason's Gym", "World of Unpredictable Wrestling — Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz.", 'https://wuwonline.com/about/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Our story</p><h1 class="page-h">About WUW</h1></header>
+  <section class="ab-grid">
+    <div class="ab-photo"><img src="/img/about.jpg" alt="Johnny Rodz"/></div>
+    <div class="ab-body">
+      <p>World of Unpredictable Wrestling was founded by <strong>Johnny Rodz</strong> — born José Rodriguez — a Brooklyn native whose career in professional wrestling spanned four decades. After competing on the MSG circuit and throughout the WWF, Rodz turned his attention to building the next generation of professional wrestlers.</p>
+      <p>The school has called <strong>Gleason's Gym</strong> home for years — at <strong>130 Water Street in Brooklyn</strong>, directly under the Brooklyn Bridge. Gleason's is one of the most storied athletic training facilities in the world.</p>
+      <p>WUW has trained <strong>over 400 professional wrestlers</strong> who have gone on to compete in WWE, NXT, AEW, Impact, ROH, and independent promotions worldwide.</p>
+      <p>The WUW family — known as <em>"Da Wheel"</em> — is a brotherhood and sisterhood that supports each other throughout their careers.</p>
+    </div>
+  </section>
+  <section class="ab-quote">"When you train here, you learn the real thing. The same fundamentals that built Tazz, Tommy Dreamer, and D-Von. Hard work, respect, and ring psychology."<cite>— Johnny Rodz</cite></section>
+</div></main>
+''' + footer()
+
+def render_contact():
+    sched = ''.join(f'<li><span>{d}</span><span>{t}</span></li>' for d, t in SCHEDULE)
+    return head('Contact WUW · Train at Gleason\'s Gym', f'Reach Johnny Rodz directly. Call {PHONE} or visit Gleason\'s Gym, 130 Water Street, Brooklyn.', 'https://wuwonline.com/contact/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Reach out</p><h1 class="page-h">Contact</h1><p class="page-lede">Ready to train? Have a question? Reach out directly — we respond to everyone.</p></header>
+  <div class="ct-grid">
+    <div class="ct-card"><p class="ct-h">📞 Call</p><a class="ct-big" href="tel:7187972872">{PHONE}</a><p class="ct-d">Ask for Johnny Rodz</p></div>
+    <div class="ct-card"><p class="ct-h">📧 Email</p><a class="ct-big" href="mailto:{EMAIL}">{EMAIL}</a></div>
+    <div class="ct-card"><p class="ct-h">📍 Visit</p><p class="ct-big" style="font-size:22px">{ADDR_LINE_1}</p><p class="ct-d">{ADDR_LINE_2}</p></div>
+    <div class="ct-card"><p class="ct-h">📅 Training Schedule</p><ul class="sch-list">{sched}</ul></div>
   </div>
-</div>
-</main>'''
-    return h + main + footer()
+  <p class="rl-foot">Open to everyone. Men and women. All experience levels welcome.</p>
+</div></main>
+''' + footer()
+
+def render_news():
+    items = ''.join(f'<li><a href="{H.escape(L["url"])}" target="_blank" rel="noopener">{H.escape(L["anchor"])[:90]}</a></li>' for L in mnw_links + press_links + yt_spotify_links)
+    return head('WUW In the News · Press', "WUW press coverage on Monday Night Wrestling, Fox 5, podcasts and interviews featuring Johnny Rodz, alumni, and the Brooklyn wrestling scene.", 'https://wuwonline.com/in-the-news/') + f'''
+<main class="page"><div class="page-frame">
+  <header class="page-head"><p class="ps-eyebrow">Press &amp; mentions</p><h1 class="page-h">In the News</h1><p class="page-lede">Press, podcasts, and articles featuring WUW, Johnny Rodz, and the alumni network.</p></header>
+  <ol class="news-list">{items}</ol>
+</div></main>
+''' + footer()
+
+def render_post(p):
+    body = rewrite(p.get('body_html', ''))
+    canonical = f'https://wuwonline.com{post_url(p)}'
+    desc = (p.get('description') or H.unescape(re.sub(r'<[^>]+>', ' ', body)).strip())[:200] or p['title']
+    return head(p['title'] + ' · WUW', desc, canonical) + f'''
+<main class="post-page"><article class="post">
+  <header class="post-head">
+    {f'<p class="post-date">{p["date"]}</p>' if p.get('date') else ''}
+    <h1 class="post-title">{H.escape(p['title'])}</h1>
+  </header>
+  <div class="post-body">{body}</div>
+  <footer class="post-foot"><a href="/" class="link-back">← Home</a></footer>
+</article></main>
+''' + footer()
 
 def render_styles():
-    accent = ACCENT
-    return ('''
-:root {
-  --bone:#efebe3; --bone-soft:#e7e1d4; --bone-warm:#ddd5c2; --rule:#d9d2c4;
-  --ink:#0e0e0e; --ink-soft:#2a2925; --ink-mute:#6f6a5e; --ink-faint:#a8a193;
-  --accent:''' + accent + ''';
-  --display:"Instrument Serif", Georgia, serif;
-  --sans:"Inter", -apple-system, system-ui, sans-serif;
-  --frame-pad:clamp(20px,5vw,64px); --max:1240px;
-}
+    return ''':root{--bg:#0a0a0a;--ink:#0a0a0a;--bone:#f4f0e8;--bone-soft:#e8e1cf;--accent:#d2222d;--gold:#d4a73a;--rule:#2a2a2a;--display:"Anton","Bebas Neue",Impact,sans-serif;--display2:"Bebas Neue",Impact,sans-serif;--sans:"Inter",system-ui,sans-serif;--frame-pad:clamp(20px,5vw,72px);--max:1280px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bone);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-img{max-width:100%;display:block}
-a{color:inherit;text-decoration:none}
-ul,ol{list-style:none}
-.grain{position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.05;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
-
-/* Masthead */
-.masthead{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px var(--frame-pad);z-index:50;color:var(--bone);background:rgba(14,14,14,.92);border-bottom:1px solid rgba(239,235,227,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.wordmark{display:inline-flex;align-items:baseline;gap:0;font-family:var(--display);font-size:clamp(22px,2.4vw,30px);line-height:1;color:var(--bone)}
-.wm-italic{font-style:italic;color:var(--accent);margin-right:.04em}
-.wm-roman{color:var(--bone)}
-.primary{display:flex;gap:clamp(14px,2vw,28px);font-size:11px;letter-spacing:.2em;text-transform:uppercase}
-.primary a{color:#efebe3;padding:6px 0;position:relative;transition:color .25s}
+img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list-style:none}
+.masthead{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px var(--frame-pad);z-index:50;color:var(--bone);background:rgba(10,10,10,.96);border-bottom:2px solid var(--accent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.wordmark{display:inline-flex;align-items:center;gap:14px;color:var(--bone)}
+.wm-mark{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:.04em}
+.wm-tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.6);font-weight:600}
+.primary{display:flex;gap:clamp(10px,1.4vw,20px);font-family:var(--display2);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
+.primary a{color:#efebe3;padding:8px 4px;transition:color .25s}
 .primary a:hover{color:var(--accent)}
-.primary a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:currentColor;transform-origin:left;transform:scaleX(0);transition:transform .4s cubic-bezier(.2,.7,.2,1)}
-.primary a:hover::after{transform:scaleX(1)}
-.menu-toggle{display:none;width:48px;height:48px;background:transparent;border:1px solid rgba(239,235,227,.5);border-radius:999px;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;padding:0}
-.menu-toggle span{display:block;width:22px;height:1.5px;background:var(--bone);border-radius:2px;transition:transform .3s}
-.menu-open .menu-toggle span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+.primary-cta{background:var(--accent);color:var(--bone)!important;padding:10px 20px!important}
+.primary-cta:hover{background:#a01820}
+.menu-toggle{display:none;width:48px;height:48px;background:transparent;border:1px solid rgba(244,240,232,.5);align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;padding:0}
+.menu-toggle span{display:block;width:22px;height:2px;background:var(--bone);transition:transform .3s}
+.menu-open .menu-toggle span:nth-child(1){transform:translateY(8px) rotate(45deg)}
 .menu-open .menu-toggle span:nth-child(2){opacity:0}
-.menu-open .menu-toggle span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
-.mobile-nav{position:fixed;top:0;left:0;right:0;height:100vh;height:100dvh;z-index:49;background:rgba(14,14,14,.97);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);opacity:0;visibility:hidden;transition:opacity .32s,visibility .32s;overflow-y:auto}
+.menu-open .menu-toggle span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+.mobile-nav{position:fixed;top:0;left:0;right:0;height:100vh;height:100dvh;z-index:49;background:rgba(10,10,10,.98);opacity:0;visibility:hidden;transition:opacity .32s,visibility .32s;overflow-y:auto;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .menu-open .mobile-nav{opacity:1;visibility:visible}
 .menu-open{overflow:hidden}
-.mobile-nav-inner{display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0) + 88px) 28px 40px;width:100%;max-width:460px;margin:0 auto}
-.mobile-nav a{padding:18px 0;font-family:var(--display);font-size:28px;color:var(--bone);border-bottom:1px solid rgba(239,235,227,.1)}
+.mobile-nav-inner{padding:calc(env(safe-area-inset-top,0) + 88px) 28px 40px;max-width:480px;margin:0 auto;display:flex;flex-direction:column}
+.mobile-nav a{font-family:var(--display);font-size:32px;color:var(--bone);padding:18px 0;border-bottom:1px solid rgba(244,240,232,.1);letter-spacing:.04em}
 .mobile-nav a:hover{color:var(--accent)}
-
-/* Hero */
-.hero{position:relative;min-height:clamp(560px,84vh,760px);display:flex;align-items:center;background:var(--ink);overflow:hidden;isolation:isolate;text-align:center;color:var(--bone)}
+.mobile-nav-fine{margin-top:24px;font-size:14px}
+.mobile-nav-fine a{font-size:14px!important;border:none!important;padding:8px 0!important;color:rgba(244,240,232,.7)!important;font-family:var(--sans)!important}
+.hero{position:relative;min-height:clamp(620px,92vh,860px);display:flex;align-items:center;background:#000;overflow:hidden;color:var(--bone)}
 .hero-image{position:absolute;inset:0;z-index:0}
-.hero-image img{width:100%;height:100%;object-fit:cover;object-position:center 25%;filter:saturate(.85) contrast(1.05);animation:zoom 22s ease-in-out infinite alternate}
-@keyframes zoom{from{transform:scale(1.02)}to{transform:scale(1.12) translate(-1.5%,-1%)}}
-.hero-veil{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 50%,rgba(14,14,14,.35),rgba(14,14,14,.7) 70%,rgba(14,14,14,.92)),linear-gradient(180deg,rgba(14,14,14,.4),rgba(14,14,14,.85))}
-.hero-frame{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:clamp(96px,14vh,140px) var(--frame-pad)}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.32em;text-transform:uppercase;background:rgba(14,14,14,.55);padding:8px 18px;border:1px solid rgba(239,235,227,.18);border-radius:999px;margin-bottom:36px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.hero-eyebrow .rule{display:inline-block;width:28px;height:1px;background:var(--accent)}
-.hero-title{font-family:var(--display);font-weight:400;font-size:clamp(56px,11vw,140px);line-height:.96;letter-spacing:-.022em;margin-bottom:28px;text-shadow:0 2px 24px rgba(0,0,0,.6)}
-.hl-line{display:block;overflow:hidden}
-.hl-word{display:inline-block;animation:rise 1s cubic-bezier(.2,.7,.2,1) forwards;opacity:0;transform:translateY(110%)}
-.hl-line:nth-child(1) .hl-word{animation-delay:.2s}
-.hl-line:nth-child(2) .hl-word{animation-delay:.4s}
-.hl-em{font-style:italic;color:var(--accent)}
-@keyframes rise{to{opacity:1;transform:translateY(0)}}
-.hero-sub{font-family:var(--display);font-style:italic;font-size:clamp(18px,1.9vw,26px);line-height:1.5;color:rgba(239,235,227,.95);max-width:52ch;margin:0 auto 28px;text-shadow:0 1px 8px rgba(0,0,0,.55)}
-.hero-cta-row{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:24px}
-.link-cta{display:inline-flex;align-items:center;gap:14px;padding:10px 0;font-size:12px;letter-spacing:.22em;text-transform:uppercase;border-bottom:1px solid currentColor;transition:gap .4s,color .3s}
-.link-cta:hover{gap:20px;color:var(--accent)}
-.link-cta.on-image{color:var(--bone);border-color:var(--bone)}
-.link-fine{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-size:17px;font-style:italic;color:rgba(239,235,227,.9)}
-.link-fine.on-image .dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--accent)}
-.link-back{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid currentColor;padding-bottom:2px}
-
-/* Press strip */
-.press-strip{padding:clamp(40px,6vh,72px) var(--frame-pad);text-align:center;background:var(--bone)}
-.ps-eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
-.ps-row{display:flex;flex-wrap:wrap;justify-content:center;gap:20px 36px;font-family:var(--display);font-size:clamp(20px,2.4vw,30px)}
-.ps-row a{color:var(--ink);transition:color .25s;border-bottom:1px solid transparent}
-.ps-row a:hover{color:var(--accent);border-color:var(--accent)}
-
-/* Recent grid */
-.recent{padding:clamp(64px,9vh,100px) var(--frame-pad) clamp(80px,12vh,140px);max-width:var(--max);margin:0 auto}
-.section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--rule);flex-wrap:wrap;gap:12px}
-.section-title{font-family:var(--display);font-weight:400;font-size:clamp(34px,5.4vw,64px);line-height:1;letter-spacing:-.012em;color:var(--ink)}
-.section-more{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid currentColor;padding-bottom:2px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:clamp(20px,2.5vw,36px)}
-.grid-card{background:var(--bone-soft);overflow:hidden;border-radius:4px;transition:transform .4s,box-shadow .4s}
-.grid-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px -24px rgba(14,14,14,.35)}
-.gc-img{aspect-ratio:4/3;overflow:hidden;background:var(--ink)}
-.gc-img img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s}
-.grid-card:hover .gc-img img{transform:scale(1.05)}
-.gc-meta{padding:18px 22px 24px}
-.gc-date{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
-.gc-title{font-family:var(--display);font-weight:400;font-size:clamp(20px,2vw,26px);line-height:1.15;color:var(--ink)}
-
-/* Page frames */
-.page-frame{max-width:920px;margin:0 auto;padding:clamp(112px,16vh,160px) var(--frame-pad) clamp(72px,10vh,120px)}
-.page-frame .section-head{flex-direction:column;align-items:flex-start;border-bottom-color:var(--rule)}
-.eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
-
-/* Post page */
-.post-page{padding:clamp(100px,14vh,140px) var(--frame-pad) clamp(80px,12vh,140px);max-width:760px;margin:0 auto}
-.post-head{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--rule)}
-.post-date{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
-.post-title{font-family:var(--display);font-weight:400;font-size:clamp(36px,5.6vw,64px);line-height:1.05;letter-spacing:-.015em;color:var(--ink)}
-.post-body{font-size:18px;line-height:1.75;color:var(--ink-soft)}
+.hero-image img{width:100%;height:100%;object-fit:cover;filter:saturate(.7) contrast(1.15) brightness(.6)}
+.hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.1) 30%,rgba(0,0,0,.6) 65%,rgba(0,0,0,.92)),linear-gradient(90deg,rgba(0,0,0,.7),rgba(0,0,0,.05) 40%,transparent)}
+.hero-frame{position:relative;z-index:2;max-width:var(--max);margin:0 auto;padding:clamp(120px,18vh,180px) var(--frame-pad) clamp(48px,7vh,80px);width:100%}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);background:rgba(0,0,0,.55);padding:9px 18px;border:1px solid rgba(212,167,58,.45);margin-bottom:32px;font-weight:600}
+.hero-eyebrow .dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.hero-title{font-family:var(--display);text-transform:uppercase;font-size:clamp(72px,15vw,200px);line-height:.86;color:var(--bone);margin-bottom:32px;text-shadow:0 4px 32px rgba(0,0,0,.7)}
+.ht-1,.ht-2,.ht-3{display:block}
+.ht-2{padding-left:.4em;font-size:.7em;color:rgba(244,240,232,.7)}
+.ht-3 em{font-style:normal;color:var(--accent);text-shadow:0 4px 32px rgba(210,34,45,.4)}
+.hero-sub{font-size:clamp(16px,1.6vw,21px);line-height:1.55;color:rgba(244,240,232,.92);max-width:60ch;text-shadow:0 1px 8px rgba(0,0,0,.7);margin-bottom:32px}
+.hero-cta-row{display:flex;flex-wrap:wrap;gap:14px}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--bone);font-family:var(--display);font-size:18px;letter-spacing:.08em;text-transform:uppercase;padding:18px 32px;border:none;cursor:pointer;transition:background .25s,transform .25s}
+.btn-primary:hover{background:#a01820;transform:translateY(-2px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:10px;color:var(--bone);font-size:14px;font-weight:600;letter-spacing:.04em;padding:18px 24px;border:1px solid rgba(244,240,232,.4);background:transparent;transition:border-color .25s,color .25s}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.link-cta{display:inline-flex;font-family:var(--display);font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);border-bottom:2px solid currentColor;padding-bottom:4px}
+.link-back{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid currentColor;padding-bottom:2px}
+.alumni-strip{padding:clamp(36px,5vh,56px) var(--frame-pad);text-align:center;background:#000;color:var(--bone)}
+.ps-eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;font-weight:600}
+.al-row{font-family:var(--display);font-size:clamp(20px,2.6vw,34px);line-height:1.2;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:flex;flex-wrap:wrap;justify-content:center;gap:.4em 1em;max-width:1100px;margin:0 auto}
+.al-more{margin-top:24px;font-size:13px}
+.al-more a{color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid currentColor}
+.creds{padding:clamp(64px,9vh,100px) var(--frame-pad);background:var(--bone-soft);text-align:center}
+.sec-h{font-family:var(--display);font-size:clamp(36px,5.5vw,68px);text-transform:uppercase;color:var(--ink);margin-bottom:36px}
+.cred-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;max-width:var(--max);margin:0 auto}
+.cred{padding:32px 24px;background:var(--bone);border-top:4px solid var(--accent);text-align:center}
+.cr-num{display:block;font-family:var(--display);font-size:clamp(56px,8vw,100px);color:var(--accent);line-height:1;margin-bottom:14px}
+.cr-h{display:block;font-family:var(--display);font-size:22px;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+.cr-d{display:block;font-size:14px;color:var(--ink);opacity:.7}
+.learn{padding:clamp(64px,10vh,120px) var(--frame-pad);background:var(--bone)}
+.lr-grid{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(40px,6vw,80px);align-items:center}
+.lr-img{aspect-ratio:4/5;overflow:hidden;background:var(--ink)}
+.lr-img img{width:100%;height:100%;object-fit:cover;filter:contrast(1.05) saturate(.9)}
+.lr-list{display:grid;gap:16px;margin:24px 0;font-size:17px;line-height:1.55}
+.lr-list li{padding-left:24px;position:relative}
+.lr-list li::before{content:"";position:absolute;left:0;top:.7em;width:14px;height:2px;background:var(--accent)}
+.contact-cta{padding:clamp(72px,10vh,120px) var(--frame-pad);background:var(--ink);color:var(--bone);text-align:center}
+.contact-cta .sec-h{color:var(--bone)}
+.cc-sub{font-size:18px;line-height:1.55;color:rgba(244,240,232,.85);max-width:560px;margin:0 auto 48px}
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;max-width:1080px;margin:0 auto}
+.cc-card{padding:32px 24px;background:rgba(244,240,232,.06);border:1px solid rgba(244,240,232,.12);text-align:center}
+.cc-h{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;font-weight:600}
+.cc-v{font-family:var(--display);font-size:clamp(24px,2.6vw,34px);color:var(--bone);line-height:1.1;margin-bottom:8px}
+.cc-v.sm{font-size:20px;margin-bottom:2px}
+.cc-v a{color:var(--bone);transition:color .25s}
+.cc-v a:hover{color:var(--accent)}
+.cc-d{font-size:13px;color:rgba(244,240,232,.65)}
+.page{padding-top:0}
+.page-frame{max-width:var(--max);margin:0 auto;padding:clamp(120px,16vh,160px) var(--frame-pad) clamp(80px,10vh,120px)}
+.page-head{text-align:center;margin-bottom:64px;padding-bottom:36px;border-bottom:2px solid var(--accent)}
+.page-h{font-family:var(--display);font-size:clamp(56px,9vw,128px);text-transform:uppercase;color:var(--ink);line-height:.92;margin-bottom:18px}
+.page-lede{font-size:18px;line-height:1.5;color:var(--ink);opacity:.75;max-width:60ch;margin:0 auto}
+.al-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.al-card{padding:22px 20px;background:var(--bone-soft);border-left:4px solid var(--accent)}
+.al-card h3{font-family:var(--display);font-size:24px;text-transform:uppercase;color:var(--ink);margin-bottom:6px;line-height:1.05}
+.al-card p{font-size:13px;color:var(--ink);opacity:.7}
+.memorial{padding:32px;background:#000;color:var(--bone);margin-bottom:48px;text-align:center;border:1px solid var(--gold)}
+.me-cross{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.memorial h2{font-family:var(--display);font-size:32px;text-transform:uppercase;margin-bottom:14px}
+.roster-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:48px}
+.roster-list li{font-family:var(--display);font-size:24px;text-transform:uppercase;color:var(--ink);padding:18px 22px;background:var(--bone-soft);border-left:4px solid var(--accent);letter-spacing:.02em}
+.title-list{display:grid;gap:0;border-top:1px solid var(--rule);max-width:760px;margin:0 auto 48px}
+.title-list li{display:flex;justify-content:space-between;align-items:center;padding:24px 0;border-bottom:1px solid var(--rule);gap:24px}
+.tt-belt{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);opacity:.7;font-weight:600}
+.tt-holder{font-family:var(--display);font-size:clamp(20px,2.4vw,30px);text-transform:uppercase;color:var(--accent);text-align:right}
+.rl-foot{text-align:center;font-size:14px;color:var(--ink);opacity:.7}
+.rl-foot.small{font-size:12px}
+.ev-card{padding:32px;background:var(--bone-soft);margin-bottom:18px;border-left:4px solid var(--accent)}
+.ev-card h2{font-family:var(--display);font-size:28px;text-transform:uppercase;margin-bottom:10px;color:var(--ink)}
+.ev-card p{margin-bottom:18px;font-size:16px}
+.ab-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:start;margin-bottom:48px}
+.ab-photo{aspect-ratio:4/5;overflow:hidden;background:var(--ink)}
+.ab-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:contrast(1.05)}
+.ab-body p{margin-bottom:18px;font-size:17px;line-height:1.7}
+.ab-body strong{font-weight:600;color:var(--accent)}
+.ab-quote{padding:48px;background:#000;color:var(--bone);font-family:var(--display);font-size:clamp(24px,3vw,40px);text-align:center;line-height:1.25;border-top:4px solid var(--accent)}
+.ab-quote cite{display:block;margin-top:18px;font-family:var(--sans);font-size:14px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-style:normal}
+.ct-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-bottom:48px}
+.ct-card{padding:32px;background:var(--bone-soft);border-top:4px solid var(--accent);text-align:center}
+.ct-h{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;font-weight:600}
+.ct-big{display:block;font-family:var(--display);font-size:32px;color:var(--ink);text-transform:uppercase;line-height:1.1;margin-bottom:8px}
+.ct-big a{color:var(--ink);transition:color .25s}
+.ct-big a:hover{color:var(--accent)}
+.ct-d{font-size:14px;color:var(--ink);opacity:.7}
+.sch-list li{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px dashed rgba(0,0,0,.1)}
+.sch-list li span:first-child{font-weight:600}
+.news-list{display:grid;gap:0;border-top:1px solid var(--rule);max-width:880px;margin:0 auto}
+.news-list li{padding:18px 0;border-bottom:1px solid var(--rule)}
+.news-list a{font-size:16px;color:var(--ink);border-bottom:1px solid transparent;word-break:break-word;display:inline-block}
+.news-list a:hover{color:var(--accent);border-color:var(--accent)}
+.post-page{padding:clamp(120px,16vh,160px) var(--frame-pad) clamp(64px,10vh,100px);max-width:760px;margin:0 auto}
+.post-head{margin-bottom:32px;padding-bottom:18px;border-bottom:2px solid var(--accent)}
+.post-date{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-weight:600}
+.post-title{font-family:var(--display);font-size:clamp(40px,7vw,72px);text-transform:uppercase;color:var(--ink);line-height:.95}
+.post-body{font-size:18px;line-height:1.75;color:var(--ink)}
 .post-body p{margin-bottom:1.2em}
-.post-body img{margin:32px 0;border-radius:4px;width:100%;height:auto}
-.post-body a{color:var(--accent);border-bottom:1px solid currentColor;transition:opacity .2s}
-.post-body a:hover{opacity:.8}
-.post-body h2,.post-body h3{font-family:var(--display);font-weight:400;color:var(--ink);margin:1.5em 0 .5em;line-height:1.2}
+.post-body img{margin:32px 0;width:100%;height:auto}
+.post-body a{color:var(--accent);border-bottom:1px solid currentColor}
+.post-body h2,.post-body h3{font-family:var(--display);text-transform:uppercase;color:var(--ink);margin:1.5em 0 .5em;line-height:1.1}
 .post-body h2{font-size:32px}
-.post-body h3{font-size:24px}
-.post-body blockquote{border-left:2px solid var(--accent);padding-left:24px;margin:24px 0;font-style:italic;color:var(--ink)}
+.post-body h3{font-size:26px}
 .post-foot{margin-top:48px;padding-top:24px;border-top:1px solid var(--rule)}
+.colophon{background:#000;color:var(--bone)}
+.colophon-frame{max-width:var(--max);margin:0 auto;padding:64px var(--frame-pad);display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;align-items:start}
+.col-mark{font-family:var(--display);font-size:48px;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px}
+.col-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.55);font-weight:600}
+.col-h{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;letter-spacing:.04em}
+.col-contact p,.col-social p{font-size:14px;line-height:1.7;margin-bottom:6px}
+.col-contact a,.col-social a{color:var(--bone);border-bottom:1px solid transparent;transition:border-color .25s}
+.col-contact a:hover,.col-social a:hover{border-color:var(--accent);color:var(--accent)}
+.col-fine{padding:18px var(--frame-pad);border-top:1px solid rgba(244,240,232,.1);font-size:11px;color:rgba(244,240,232,.4);text-align:center}
+.bg-refs{padding:14px var(--frame-pad);border-top:1px solid rgba(244,240,232,.06);font-size:10px;line-height:1.8;color:rgba(244,240,232,.32);display:flex;flex-wrap:wrap;gap:6px 14px}
+.bg-refs a{color:rgba(244,240,232,.42);transition:color .25s}
+.bg-refs a:hover{color:var(--accent)}
+@media (max-width:900px){.primary{display:none}.menu-toggle{display:flex!important}.wm-tag{display:none}.colophon-frame{grid-template-columns:1fr;gap:32px}.lr-grid,.ab-grid{grid-template-columns:1fr;gap:32px}.lr-img,.ab-photo{max-width:420px;aspect-ratio:1/1;margin:0 auto}.ht-2{padding-left:0}}
+'''
 
-/* Archive */
-.archive-page .ar-year{margin-bottom:48px}
-.ar-h{font-family:var(--display);font-weight:400;font-size:clamp(36px,5vw,52px);color:var(--accent);margin-bottom:16px;line-height:1}
-.ar-list li{border-bottom:1px solid var(--rule)}
-.ar-list a{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding:14px 0;transition:padding-left .3s}
-.ar-list a:hover{padding-left:8px;color:var(--accent)}
-.ar-d{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);min-width:140px}
-.ar-t{font-family:var(--display);font-size:clamp(17px,1.7vw,22px);text-align:right;flex:1}
-
-/* Press / Writing */
-.press-page .pr-outlet{margin-bottom:48px}
-.pr-outlet h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.4vw,40px);color:var(--ink);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
-.pr-list li{padding:12px 0;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:4px}
-.pr-list a{color:var(--ink);font-family:var(--display);font-size:18px;border-bottom:1px solid transparent;transition:border-color .25s}
-.pr-list a:hover{border-color:var(--accent);color:var(--accent)}
-.pr-src{font-size:12px;color:var(--ink-mute)}
-.pr-src a{font-size:12px;font-family:var(--sans);color:var(--ink-mute);border-bottom:1px dashed transparent}
-.pr-src a:hover{border-color:var(--ink-mute)}
-
-/* About */
-.about-frame{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(40px,6vw,80px);align-items:center}
-.ap-photo{aspect-ratio:4/5;overflow:hidden;border-radius:4px;background:var(--ink)}
-.ap-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
-.ap-lede{font-family:var(--display);font-size:clamp(22px,2.6vw,30px);font-style:italic;line-height:1.35;color:var(--ink);margin:18px 0 24px}
-.ap-body p{font-size:17px;line-height:1.7;color:var(--ink-soft);margin-bottom:18px;max-width:56ch}
-
-/* Footer */
-.colophon{background:var(--ink);color:var(--bone-warm);border-top:1px solid rgba(239,235,227,.08)}
-.colophon-frame{max-width:var(--max);margin:0 auto;padding:56px var(--frame-pad);display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;align-items:start}
-.colophon-mark{font-family:var(--display);font-size:30px;color:var(--bone);line-height:1;display:block;margin-bottom:6px}
-.colophon-mark em{font-style:italic;color:var(--accent);margin-right:.04em}
-.colophon-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
-.colophon-meta{font-size:14px;line-height:1.7}
-.colophon-meta a{color:var(--bone-warm);border-bottom:1px solid transparent;transition:border-color .25s}
-.colophon-meta a:hover{border-color:var(--accent);color:var(--bone)}
-.colophon-fine{font-size:11px;color:var(--ink-faint);text-align:right}
-.bg-refs{padding:14px var(--frame-pad);border-top:1px solid rgba(239,235,227,.06);font-size:10px;line-height:1.8;color:rgba(239,235,227,.32);display:flex;flex-wrap:wrap;gap:6px 14px}
-.bg-refs a{color:rgba(239,235,227,.42);text-decoration:none;border-bottom:1px solid transparent;transition:color .25s,border-color .25s}
-.bg-refs a:hover{color:var(--accent);border-color:var(--accent)}
-
-@media (max-width:820px){
-  .primary{display:none}.menu-toggle{display:flex!important}
-  .colophon-frame{grid-template-columns:1fr;gap:24px}
-  .colophon-fine{text-align:left}
-  .ar-list a{flex-direction:column;gap:4px;align-items:flex-start;padding:14px 0}
-  .ar-t{text-align:left}
-  .about-frame{grid-template-columns:1fr;gap:32px}
-  .ap-photo{max-width:360px;aspect-ratio:1/1}
-  .ps-row{gap:14px 24px;font-size:18px}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-}
-''').replace('BUILD_TIMESTAMP', os.environ.get('BUILD', 'dev'))
-
-# --- WRITE ---
 def write(path, content):
     out = os.path.join(ROOT, path.lstrip('/'))
     os.makedirs(os.path.dirname(out) or out, exist_ok=True)
     with open(out, 'w') as f: f.write(content)
 
-write('index.html', render_index())
+write('index.html', render_home())
+write('alumni/index.html', render_alumni())
+write('roster/index.html', render_roster())
+write('title-holders/index.html', render_titles())
+write('events/index.html', render_events())
 write('about/index.html', render_about())
-write('archive/index.html', render_archive())
-write('press/index.html', render_press())
-write('writing/index.html', render_writing())
+write('contact/index.html', render_contact())
+write('in-the-news/index.html', render_news())
 write('styles.css', render_styles())
 
 post_count = 0
 for p in posts:
-    rel = post_url(p).lstrip('/')
-    write(rel + 'index.html', render_post(p))
+    write(post_url(p).lstrip('/') + 'index.html', render_post(p))
     post_count += 1
 
-# Sitemap
 sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-for path, prio in [('/', 1.0), ('/about/', 0.8), ('/writing/', 0.9), ('/press/', 0.9), ('/archive/', 0.7)]:
-    sm.append(f'  <url><loc>https://{SITE_HOST}{path}</loc><priority>{prio}</priority></url>')
+for path, prio in [('/', 1.0), ('/about/', 0.9), ('/alumni/', 0.95), ('/roster/', 0.8),
+                   ('/title-holders/', 0.7), ('/events/', 0.85), ('/contact/', 0.95), ('/in-the-news/', 0.7)]:
+    sm.append(f'  <url><loc>https://wuwonline.com{path}</loc><priority>{prio}</priority></url>')
 for p in posts:
-    sm.append(f'  <url><loc>https://{SITE_HOST}{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.6</priority></url>')
+    sm.append(f'  <url><loc>https://wuwonline.com{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.5</priority></url>')
 sm.append('</urlset>')
 write('sitemap.xml', '\n'.join(sm))
-
-# robots.txt
-write('robots.txt', f'User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\nUser-agent: ClaudeBot\nDisallow: /\nUser-agent: CCBot\nDisallow: /\nUser-agent: Google-Extended\nDisallow: /\n\nSitemap: https://{SITE_HOST}/sitemap.xml\n')
-
-# _headers
-write('_headers', '/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/styles.css\n  Cache-Control: public, max-age=300, must-revalidate\n\n/img/*\n  Cache-Control: public, max-age=86400\n')
-
-# favicon
-write('favicon.svg', '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0e0e0e"/><text x="32" y="46" font-family="Georgia, serif" font-size="40" fill="#efebe3" text-anchor="middle" letter-spacing="-1"><tspan fill="''' + ACCENT + '''" font-style="italic">I</tspan><tspan>J</tspan></text></svg>''')
-
-print(f'  built {post_count} post pages + 5 page templates + sitemap + robots')
+write('robots.txt', 'User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n\nSitemap: https://wuwonline.com/sitemap.xml\n')
+write('favicon.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0a0a0a"/><text x="32" y="44" font-family="Anton, Impact, sans-serif" font-size="38" fill="#f4f0e8" text-anchor="middle" letter-spacing="-1"><tspan fill="#d2222d">W</tspan>UW</text></svg>')
+write('_headers', '/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/styles.css\n  Cache-Control: public, max-age=300\n\n/img/*\n  Cache-Control: public, max-age=86400\n')
+print(f'  built {post_count} post pages + 8 named pages + sitemap')
