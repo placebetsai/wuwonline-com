@@ -128,12 +128,13 @@ def head(title, desc, canonical):
     <img src="/img/logo.png" alt="WUW — World Of Unpredictable Wrestling" class="wm-logo" />
   </a>
   <nav class="primary" aria-label="Primary">
-    <a href="/about/">About</a>
+    <a href="/johnny-rodz/">Johnny Rodz</a>
     <a href="/alumni/">Alumni</a>
     <a href="/roster/">Roster</a>
     <a href="/title-holders/">Champions</a>
     <a href="/events/">Events</a>
     <a href="/in-the-news/">News</a>
+    <a href="/contact/">Contact</a>
     <a href="/contact/" class="primary-cta">Train</a>
   </nav>
   <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span><span></span></button>
@@ -141,13 +142,14 @@ def head(title, desc, canonical):
 <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
   <nav class="mobile-nav-inner" aria-label="Mobile primary">
     <a href="/">Home</a>
-    <a href="/about/">About</a>
+    <a href="/johnny-rodz/">Johnny Rodz</a>
+    <a href="/about/">About WUW</a>
     <a href="/alumni/">Alumni</a>
     <a href="/roster/">Roster</a>
     <a href="/title-holders/">Champions</a>
     <a href="/events/">Events</a>
     <a href="/in-the-news/">News</a>
-    <a href="/contact/">Train · Contact</a>
+    <a href="/contact/">Contact · Train</a>
     <div class="mobile-nav-fine">
       <a href="tel:7187972872">{PHONE}</a>
       <a href="mailto:{EMAIL}">{EMAIL}</a>
@@ -157,7 +159,6 @@ def head(title, desc, canonical):
 '''
 
 def footer():
-    bg_links = ''.join(f'<a href="{H.escape(L["url"])}" rel="noopener" target="_blank">{H.escape(L["anchor"][:40]) or "ref"}</a>' for L in mnw_links + yt_spotify_links)
     return f'''
 <footer class="colophon">
   <div class="colophon-frame">
@@ -174,8 +175,7 @@ def footer():
       <p><a href="https://www.facebook.com/WorldofUnpredictableWrestling" target="_blank" rel="noopener me">Facebook</a></p>
     </div>
   </div>
-  <div class="col-fine"><p>© <span id="year">2026</span> World of Unpredictable Wrestling. All rights reserved.</p><p>Founded by Johnny Rodz · WWE Hall of Fame Class of 1996</p></div>
-  <nav class="bg-refs" aria-label="Press references">{bg_links}</nav>
+  <div class="col-fine"><p>© <span id="year">2026</span> World of Unpredictable Wrestling. All rights reserved.</p><p>Founded by Johnny Rodz · WWE Hall of Fame Class of 1996 · <a href="/in-the-news/">Press &amp; media →</a></p></div>
 </footer>
 <script>document.getElementById("year").textContent=new Date().getFullYear();
 (function(){{const t=document.querySelector(".menu-toggle"),d=document.getElementById("mobile-nav"),b=document.body;if(!t||!d)return;t.addEventListener("click",()=>{{const o=b.classList.toggle("menu-open");t.setAttribute("aria-expanded",o);d.setAttribute("aria-hidden",!o);}});document.querySelectorAll('.mobile-nav a').forEach(a=>a.addEventListener("click",()=>b.classList.remove("menu-open")));}})();
@@ -200,7 +200,7 @@ def render_home():
         <span class="ht-2">with</span>
         <span class="ht-3"><em>Johnny Rodz</em></span>
       </h1>
-      <p class="hero-sub">WWE Hall of Famer · 400+ professional wrestlers trained · the man who built Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.</p>
+      <p class="hero-sub">WWE Hall of Famer · 400+ professional wrestlers trained · the man who trained Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.</p>
       <div class="hero-cta-row">
         <a class="btn-primary" href="/contact/">Start Training Today</a>
         <a class="btn-ghost" href="tel:7187972872">📞 {PHONE}</a>
@@ -298,7 +298,7 @@ def render_about():
       <p>The WUW family — known as <em>"Da Wheel"</em> — is a brotherhood and sisterhood that supports each other throughout their careers.</p>
     </div>
   </section>
-  <section class="ab-quote">"When you train here, you learn the real thing. The same fundamentals that built Tazz, Tommy Dreamer, and D-Von. Hard work, respect, and ring psychology."<cite>— Johnny Rodz</cite></section>
+  <section class="ab-quote">"When you train here, you learn the real thing. The same fundamentals that trained Tazz, Tommy Dreamer, and D-Von. Hard work, respect, and ring psychology."<cite>— Johnny Rodz</cite></section>
 </div></main>
 ''' + footer()
 
@@ -326,6 +326,25 @@ def render_news():
 </div></main>
 ''' + footer()
 
+def render_rodz():
+    body = page_body('/johnny-rodz/')
+    return head("Johnny Rodz · WWE Hall of Famer · WUW Founder", "Johnny 'The Unpredictable' Rodz — born José Rodriguez. WWE Hall of Fame Class of 1996. Founder of World of Unpredictable Wrestling. Trained 400+ professional wrestlers including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.", 'https://wuwonline.com/johnny-rodz/') + f'''
+<main class="page rodz-page">
+  <section class="rodz-hero">
+    <picture class="rodz-hero-image" aria-hidden="true"><img src="/img/about.jpg" alt="" loading="eager"/></picture>
+    <div class="rodz-hero-veil"></div>
+    <div class="rodz-hero-frame">
+      <p class="ps-eyebrow">WWE Hall of Fame · Class of 1996</p>
+      <h1 class="rodz-h">Johnny <em>"The Unpredictable"</em> Rodz</h1>
+      <p class="rodz-sub">Born José Rodriguez · Brooklyn legend · trainer of champions · founder of WUW.</p>
+    </div>
+  </section>
+  <div class="page-frame rodz-body">
+    {body if body else '<p>Bio loading.</p>'}
+  </div>
+</main>
+''' + footer()
+
 def render_post(p):
     body = rewrite(p.get('body_html', ''))
     canonical = f'https://wuwonline.com{post_url(p)}'
@@ -349,7 +368,7 @@ body{background:var(--bone);color:var(--ink);font-family:var(--sans);font-size:1
 img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list-style:none}
 .masthead{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px var(--frame-pad);z-index:50;color:var(--bone);background:rgba(10,10,10,.96);border-bottom:2px solid var(--accent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .wordmark{display:inline-flex;align-items:center;gap:14px;color:var(--bone)}
-.wm-logo{height:46px;width:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.wm-logo{height:80px;width:auto;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
 .wm-tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.6);font-weight:600}
 .primary{display:flex;gap:clamp(10px,1.4vw,20px);font-family:var(--display2);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
 .primary a{color:#efebe3;padding:8px 4px;transition:color .25s}
@@ -502,7 +521,25 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .colophon{background:#000;color:var(--bone)}
 .colophon-frame{max-width:var(--max);margin:0 auto;padding:64px var(--frame-pad);display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;align-items:start}
 .col-mark{font-family:var(--display);font-size:48px;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px}
-.col-logo{height:80px;width:auto;display:block;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.col-logo{height:120px;width:auto;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+/* Johnny Rodz bio page */
+.rodz-page{padding-top:0}
+.rodz-hero{position:relative;min-height:480px;display:flex;align-items:flex-end;background:#000;overflow:hidden;color:var(--bone)}
+.rodz-hero-image{position:absolute;inset:0;z-index:0}
+.rodz-hero-image img{width:100%;height:100%;object-fit:cover;object-position:center 35%;filter:saturate(.8) contrast(1.1) brightness(.6)}
+.rodz-hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.1) 30%,rgba(0,0,0,.65) 75%,rgba(0,0,0,.95))}
+.rodz-hero-frame{position:relative;z-index:2;max-width:var(--max);margin:0 auto;padding:clamp(120px,18vh,180px) var(--frame-pad) clamp(48px,7vh,72px);width:100%}
+.rodz-h{font-family:var(--display);font-size:clamp(48px,8vw,108px);text-transform:uppercase;line-height:.92;color:var(--bone);margin-bottom:18px;text-shadow:0 4px 32px rgba(0,0,0,.7)}
+.rodz-h em{font-style:normal;color:var(--accent);text-shadow:0 4px 32px rgba(210,34,45,.4)}
+.rodz-sub{font-size:clamp(16px,1.6vw,21px);line-height:1.55;color:rgba(244,240,232,.92);max-width:60ch;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.rodz-body{font-size:18px;line-height:1.75;color:var(--ink)}
+.rodz-body h1,.rodz-body h2{font-family:var(--display);text-transform:uppercase;color:var(--ink);margin:1.5em 0 .5em;letter-spacing:.02em}
+.rodz-body h2{font-size:32px;color:var(--accent)}
+.rodz-body h3{font-family:var(--display);font-size:24px;color:var(--ink);margin:1.2em 0 .4em;text-transform:uppercase}
+.rodz-body p{margin-bottom:1.1em}
+.rodz-body img{margin:24px 0;border-left:4px solid var(--accent)}
+.rodz-body a{color:var(--accent);border-bottom:1px solid currentColor}
+.rodz-body strong{color:var(--ink);font-weight:700}
 .col-tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.55);font-weight:600}
 .col-h{font-family:var(--display);font-size:18px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;letter-spacing:.04em}
 .col-contact p,.col-social p{font-size:14px;line-height:1.7;margin-bottom:6px}
@@ -526,6 +563,7 @@ write('roster/index.html', append_wp_extras(render_roster(), '/roster/'))
 write('title-holders/index.html', append_wp_extras(render_titles(), '/title-holders/'))
 write('events/index.html', append_wp_extras(render_events(), '/events/'))
 write('about/index.html', append_wp_extras(render_about(), '/about/'))
+write('johnny-rodz/index.html', render_rodz())
 write('contact/index.html', append_wp_extras(render_contact(), '/contact/'))
 write('in-the-news/index.html', append_wp_extras(render_news(), '/in-the-news/'))
 write('styles.css', render_styles())
@@ -536,8 +574,9 @@ for p in posts:
     post_count += 1
 
 sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-for path, prio in [('/', 1.0), ('/about/', 0.9), ('/alumni/', 0.95), ('/roster/', 0.8),
-                   ('/title-holders/', 0.7), ('/events/', 0.85), ('/contact/', 0.95), ('/in-the-news/', 0.7)]:
+for path, prio in [('/', 1.0), ('/johnny-rodz/', 0.95), ('/about/', 0.85), ('/alumni/', 0.95),
+                   ('/roster/', 0.8), ('/title-holders/', 0.7), ('/events/', 0.85),
+                   ('/contact/', 0.95), ('/in-the-news/', 0.7)]:
     sm.append(f'  <url><loc>https://wuwonline.com{path}</loc><priority>{prio}</priority></url>')
 for p in posts:
     sm.append(f'  <url><loc>https://wuwonline.com{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.5</priority></url>')
