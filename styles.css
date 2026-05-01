@@ -25,14 +25,14 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .mobile-nav a:hover{color:var(--accent)}
 .mobile-nav-fine{margin-top:24px;font-size:14px}
 .mobile-nav-fine a{font-size:14px!important;border:none!important;padding:8px 0!important;color:rgba(244,240,232,.7)!important;font-family:var(--sans)!important}
-.hero{position:relative;min-height:clamp(620px,92vh,860px);display:flex;align-items:center;background:#000;overflow:hidden;color:var(--bone)}
+.hero{position:relative;min-height:clamp(480px,72vh,640px);display:flex;align-items:center;background:#000;overflow:hidden;color:var(--bone)}
 .hero-image{position:absolute;inset:0;z-index:0}
 .hero-image img{width:100%;height:100%;object-fit:cover;filter:saturate(.7) contrast(1.15) brightness(.6)}
 .hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.1) 30%,rgba(0,0,0,.6) 65%,rgba(0,0,0,.92)),linear-gradient(90deg,rgba(0,0,0,.7),rgba(0,0,0,.05) 40%,transparent)}
-.hero-frame{position:relative;z-index:2;max-width:var(--max);margin:0 auto;padding:clamp(120px,18vh,180px) var(--frame-pad) clamp(48px,7vh,80px);width:100%}
+.hero-frame{position:relative;z-index:2;max-width:var(--max);margin:0 auto;padding:clamp(96px,12vh,140px) var(--frame-pad) clamp(40px,6vh,64px);width:100%}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);background:rgba(0,0,0,.55);padding:9px 18px;border:1px solid rgba(212,167,58,.45);margin-bottom:32px;font-weight:600}
 .hero-eyebrow .dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--accent)}
-.hero-title{font-family:var(--display);text-transform:uppercase;font-size:clamp(72px,15vw,200px);line-height:.86;color:var(--bone);margin-bottom:32px;text-shadow:0 4px 32px rgba(0,0,0,.7)}
+.hero-title{font-family:var(--display);text-transform:uppercase;font-size:clamp(48px,9vw,118px);line-height:.92;color:var(--bone);margin-bottom:24px;text-shadow:0 4px 32px rgba(0,0,0,.7)}
 .ht-1,.ht-2,.ht-3{display:block}
 .ht-2{padding-left:.4em;font-size:.7em;color:rgba(244,240,232,.7)}
 .ht-3 em{font-style:normal;color:var(--accent);text-shadow:0 4px 32px rgba(210,34,45,.4)}
@@ -50,10 +50,10 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .al-more{margin-top:24px;font-size:13px}
 .al-more a{color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid currentColor}
 .creds{padding:clamp(64px,9vh,100px) var(--frame-pad);background:var(--bone-soft);text-align:center}
-.sec-h{font-family:var(--display);font-size:clamp(36px,5.5vw,68px);text-transform:uppercase;color:var(--ink);margin-bottom:36px}
+.sec-h{font-family:var(--display);font-size:clamp(28px,4vw,48px);text-transform:uppercase;color:var(--ink);margin-bottom:28px}
 .cred-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;max-width:var(--max);margin:0 auto}
 .cred{padding:32px 24px;background:var(--bone);border-top:4px solid var(--accent);text-align:center}
-.cr-num{display:block;font-family:var(--display);font-size:clamp(56px,8vw,100px);color:var(--accent);line-height:1;margin-bottom:14px}
+.cr-num{display:block;font-family:var(--display);font-size:clamp(44px,5.5vw,72px);color:var(--accent);line-height:1;margin-bottom:14px}
 .cr-h{display:block;font-family:var(--display);font-size:22px;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
 .cr-d{display:block;font-size:14px;color:var(--ink);opacity:.7}
 .learn{padding:clamp(64px,10vh,120px) var(--frame-pad);background:var(--bone)}
@@ -77,7 +77,7 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .page{padding-top:0}
 .page-frame{max-width:var(--max);margin:0 auto;padding:clamp(120px,16vh,160px) var(--frame-pad) clamp(80px,10vh,120px)}
 .page-head{text-align:center;margin-bottom:64px;padding-bottom:36px;border-bottom:2px solid var(--accent)}
-.page-h{font-family:var(--display);font-size:clamp(56px,9vw,128px);text-transform:uppercase;color:var(--ink);line-height:.92;margin-bottom:18px}
+.page-h{font-family:var(--display);font-size:clamp(40px,6vw,80px);text-transform:uppercase;color:var(--ink);line-height:.95;margin-bottom:16px}
 .page-lede{font-size:18px;line-height:1.5;color:var(--ink);opacity:.75;max-width:60ch;margin:0 auto}
 .al-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
 .al-card{padding:0;background:var(--bone-soft);border-left:4px solid var(--accent);overflow:hidden;display:flex;flex-direction:column;transition:transform .35s,box-shadow .35s}
@@ -157,8 +157,8 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .post-foot{margin-top:48px;padding-top:24px;border-top:1px solid var(--rule)}
 .colophon{background:#000;color:var(--bone)}
 .colophon-frame{max-width:var(--max);margin:0 auto;padding:64px var(--frame-pad);display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;align-items:start}
-.col-mark{font-family:var(--display);font-size:48px;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px}
-.col-logo{height:120px;width:auto;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.col-mark{font-family:var(--display);font-size:36px;color:var(--bone);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px}
+.col-logo{height:90px;width:auto;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
 /* Johnny Rodz bio page */
 .rodz-page{padding-top:0}
 .rodz-hero{position:relative;min-height:480px;display:flex;align-items:flex-end;background:#000;overflow:hidden;color:var(--bone)}
