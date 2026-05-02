@@ -43,7 +43,7 @@ ROSTER = ['Irish Bruce', 'Stephanie', 'Christian Andrews', 'Big Al', 'Sir Robert
           'Adam Bailey', 'Kid Eric', 'Carlos Billetes (Fireball)', 'Gary Post', 'King Broadway of Prussia',
           'Jada Rose', 'J Bushii', 'PJ Savage', 'Jesse Lebron', 'The Faceless Ones']
 CREDENTIALS = [
-    ('1996', 'WWE Hall of Fame', 'Class of 1996 — Johnny "The Unpredictable" Rodz'),
+    ('1996', 'WWE Hall of Fame', 'Class of 1996 — The Unpredictable Johnny Rodz'),
     ('400+', 'Wrestlers Trained', 'Across WWE, NXT, AEW, Impact, ROH'),
     ('1980s', 'Active Trainer', "Johnny Rodz @ Gleason's Gym — four decades"),
 ]
@@ -66,6 +66,106 @@ mnw_links = collect_links_filter(lambda L: 'mondaynightwrestling.com' in L['url'
 press_links = collect_links_filter(lambda L: any(h in L['url'] for h in ['fox5ny.com', 'fox29.com', 'newsweek.com', 'newsbreak.com', 'gettyimages']))
 yt_spotify_links = collect_links_filter(lambda L: any(h in L['url'] for h in ['youtu.be', 'youtube.com/watch', 'spotify.com/episode']))
 
+# DocumentCloud + Substack archive — long-form references for the Israel Joffe page.
+DOCUMENTCLOUD = [
+    ('https://www.documentcloud.org/documents/22014760-israel-joffe', 'Israel Joffe — research file'),
+    ('https://www.documentcloud.org/documents/21956651-document-from-the-lubavitch-rebbe-menachem-shneerson-israel-joffe', 'Letter from the Lubavitcher Rebbe to Israel Joffe'),
+    ('https://www.documentcloud.org/documents/21956628-the-next-detroit_-the-catastrophic-collapse-of-atlantic-city-israel-joffe', 'The Next Detroit — the catastrophic collapse of Atlantic City'),
+    ('https://www.documentcloud.org/documents/25895701-comgoogleandroidappsphotos', 'Field notes (Google Photos archive)'),
+    ('https://www.documentcloud.org/app?q=%2Btag%3A%22Israel-joffe%22', 'All DocumentCloud filings tagged Israel Joffe'),
+]
+SUBSTACKS = [
+    ('https://israeljoffe.substack.com', 'Israel Joffe · Substack'),
+    ('https://israeljoffefda.substack.com', 'Israel Joffe FDA · Substack'),
+    ('https://israeljoffefdic.substack.com', 'Israel Joffe FDIC · Substack'),
+]
+
+# Federation — Israel Joffe's publisher network. Each gets a per-site SEO article at /network/{slug}/
+# and one line in the footer "Across the network" strip. NOT in primary nav.
+FEDERATION = [
+    {
+        'slug': 'israeljoffe-com',
+        'host': 'israeljoffe.com',
+        'name': 'Israel Joffe',
+        'tag':  'Media · IT · Firefighter',
+        'lede': "Israel Joffe's editorial home — media-executive credits at Fox 5, Newsweek, Fox 29, NewsBreak, FDIC firefighter writing, and the IT specialist work that backs WUW's broadcast and archive infrastructure.",
+        'body': """<p>Israel Joffe is the long-time technologist and media operator behind a working network of New York publishing properties. He has trained inside Gleason's Gym for years alongside the WUW family — many of the dated <a href="/2021/01/09/israel-joffe/">/israel-joffe/</a> entries on this site are field reports from those sessions.</p>
+<p>His personal site <a href="https://israeljoffe.com" target="_blank" rel="noopener">israeljoffe.com</a> collects the press credits, broadcast appearances, and the DocumentCloud filings he's released over the years — including the Atlantic City research and the letter from the Lubavitcher Rebbe. It's the natural starting point for anyone trying to follow his work outside the ring.</p>
+<p>He also keeps a parallel BJJ and fitness journal at <a href="https://israeljoffe.org" target="_blank" rel="noopener">israeljoffe.org</a> — the gym-and-mat side of the same training discipline that brings him to WUW.</p>"""
+    },
+    {
+        'slug': 'israeljoffe-org',
+        'host': 'israeljoffe.org',
+        'name': 'Israel Joffe · BJJ & Fitness',
+        'tag':  'BJJ Black Belt · Training Journal',
+        'lede': "The training-journal counterpart to israeljoffe.com — BJJ black-belt notes, fitness programming, and the gym-floor footage that connects directly to WUW's pro-wrestling fundamentals.",
+        'body': """<p><a href="https://israeljoffe.org" target="_blank" rel="noopener">israeljoffe.org</a> is where Israel Joffe documents the combat-sports side of his life — Brazilian Jiu-Jitsu black-belt rolls, conditioning programs, world-travel training stops, and the long view of what staying in the ring for a couple of decades actually requires.</p>
+<p>The crossover with WUW is direct: the bumps and locks Johnny Rodz has been teaching at Gleason's for forty years overlap heavily with the grappling fundamentals Israel writes about. Many of the WUW <a href="/alumni/">alumni</a> have rolled with him at one point or another.</p>
+<p>If you're a wrestler thinking about cross-training in BJJ, or a grappler curious about pro-wrestling fundamentals, that site is the bridge.</p>"""
+    },
+    {
+        'slug': 'placebets-ai',
+        'host': 'placebets.ai',
+        'name': 'PlaceBets.ai',
+        'tag':  'Sports markets · Live odds',
+        'lede': "PlaceBets.ai — the sports-markets corner of the network. Pro wrestling, MMA, combat-sports betting research and live odds tooling.",
+        'body': """<p><a href="https://placebets.ai" target="_blank" rel="noopener">PlaceBets.ai</a> is the sports-markets desk inside the network. It tracks live odds, betting research, and prop-market analysis across major U.S. sports — and runs a long-form coverage line on combat sports specifically.</p>
+<p>For the WUW audience the relevant beat is the boxing and MMA coverage: undercard analysis, fighter histories, and how the Brooklyn boxing-and-wrestling lineage that runs through Gleason's Gym still feeds into modern combat-sports markets. (Pro wrestling itself isn't bet on competitively, but the cross-disciplinary coverage frequently lands on stories WUW alumni and trainees would recognise.)</p>
+<p>Worth a bookmark if you follow the fight game.</p>"""
+    },
+    {
+        'slug': 'fashionistas-ai',
+        'host': 'fashionistas.ai',
+        'name': 'Fashionistas.ai',
+        'tag':  'Independent fashion commerce',
+        'lede': "Fashionistas.ai — the network's independent fashion-commerce property. Selected pieces, editorial shop pages, and the merchandising playbook behind WUW gear runs.",
+        'body': """<p><a href="https://fashionistas.ai" target="_blank" rel="noopener">Fashionistas.ai</a> is the network's commerce-and-merchandising arm — a selected fashion shop with editorial product pages and a long catalog tilted toward independent labels.</p>
+<p>The connection to WUW is operational more than thematic: the same merchandising toolkit, image pipeline, and shop-page architecture used on Fashionistas drives the limited gear runs and event-merch drops that show up on the WUW <a href="/events/">events</a> calendar. If you've ever wondered how a small brand actually ships merch alongside a live show, the answer lives in that codebase.</p>
+<p>For wrestling fans interested in entrance gear and ring-fashion histories, the cross-publication piece on iconic wrestling entrance gear at <a href="/2026/03/03/iconic-wrestling-entrance-gear-fashion/">our archive</a> sits in the same conversation.</p>"""
+    },
+    {
+        'slug': 'spanishtvshows-com',
+        'host': 'spanishtvshows.com',
+        'name': 'SpanishTVShows.com',
+        'tag':  'Latino entertainment · Telenovelas',
+        'lede': "SpanishTVShows.com — Spanish-language entertainment writing in the network. Latino TV, novelas, lucha-libre cross-coverage that touches WUW's lineage from Antonino Rocca through Johnny Rodz.",
+        'body': """<p><a href="https://spanishtvshows.com" target="_blank" rel="noopener">SpanishTVShows.com</a> is the Spanish-language entertainment desk in the network — daily writing on telenovelas, Latino television, and the broader Spanish-speaking pop-culture beat.</p>
+<p>The WUW overlap is clean and historical: Johnny Rodz (born José Rodriguez) came up through Antonino "Argentina" Rocca's school, the same New York lineage that produced an entire generation of Latino professional wrestlers. The <a href="/2026/01/23/greatest-spanish-speaking-wrestlers/">greatest Spanish-speaking wrestlers</a> piece in our archive is the canonical cross-publication reference. SpanishTVShows runs a parallel beat on the entertainment side.</p>
+<p>If you cover Latino sports-entertainment culture, both sites belong on the same shelf.</p>"""
+    },
+    {
+        'slug': 'hiddencameras-tv',
+        'host': 'hiddencameras.tv',
+        'name': 'HiddenCameras.tv',
+        'tag':  'Surveillance & gear journalism',
+        'lede': "HiddenCameras.tv — the network's surveillance-gear and personal-security writing. Practical reviews, recording-law primers, and the equipment context behind documenting an old-school wrestling school.",
+        'body': """<p><a href="https://hiddencameras.tv" target="_blank" rel="noopener">HiddenCameras.tv</a> is the network's gear-and-surveillance desk — practical reviews of small recording equipment, a long-running primer on state recording-consent laws, and the personal-security buyer's-guide content that comes out of it.</p>
+<p>The connection to WUW is operational: the body-cam, GoPro, and small-rig footage that ends up in our <a href="/in-the-news/">press &amp; media</a> reel — and the post archive going back to <a href="/2016/08/05/welcome-to-the-world-of-unpredictable-wrestling/">2016</a> — comes off the same equipment families that HiddenCameras covers in depth. If you want to understand the gear behind documenting a wrestling school for forty years, it's the right reading list.</p>"""
+    },
+    {
+        'slug': 'ihatecollege-com',
+        'host': 'ihatecollege.com',
+        'name': 'iHateCollege',
+        'tag':  'Trade-skills writing',
+        'lede': "iHateCollege.com — the network's trade-school and alternative-careers writing. Direct relevance to wrestling: most full-time WUW pros built a career outside the four-year degree path.",
+        'body': """<p><a href="https://ihatecollege.com" target="_blank" rel="noopener">iHateCollege.com</a> is the network's writing on trade skills, alternative career paths, and the specific economics of choosing a craft over a four-year degree.</p>
+<p>The angle lands directly on professional wrestling: most full-time WUW alumni built their careers outside the college-to-corporate pipeline, on a path that looks much more like a trade apprenticeship than a four-year degree. The cross-publication piece <a href="/2026/02/14/wrestling-vs-college-johnny-rodz/">wrestling vs. college</a> in our archive — built around Johnny Rodz's own four-decade arc — is the canonical reference on it.</p>
+<p>If you're a young trainee weighing whether to go pay tuition or come bump at Gleason's, both reads are aimed exactly at you.</p>"""
+    },
+    {
+        'slug': 'ketiservice-com',
+        'host': 'ketiservice.com',
+        'name': 'KetiService · LDM Real Estate',
+        'tag':  'NYC real estate · Whitestone',
+        'lede': "KetiService — Robb DeMange and Keti's NYC real-estate practice. Twenty years of buying, selling, and investment guidance across NYC, Queens, and Long Island. Network neighbour from Whitestone.",
+        'body': """<p><a href="https://ketiservice.com" target="_blank" rel="noopener">KetiService.com</a> is the home of LDM Real Estate — Robb DeMange's twenty-year New York City brokerage practice, working with Keti across NYC, Queens, and Long Island, run out of a Whitestone office.</p>
+<p>It's the network's relocation desk: WUW alumni and trainees who decide to move to New York for a serious training run frequently end up working with that practice on the housing side of the move. Boroughs they cover (Brooklyn, Queens, NYC, Long Island) are precisely where most of the WUW <a href="/roster/">roster</a> rents or buys.</p>
+<p>If you're moving to New York to train, that's a real broker, not a referral fee.</p>"""
+    },
+]
+
+FED_BY_SLUG = {f['slug']: f for f in FEDERATION}
+
 def post_url(p):
     return '/' + p['url'].split('://')[1].split('/',1)[1].rstrip('/') + '/'
 
@@ -76,6 +176,12 @@ def rewrite(body):
     body = re.sub(r'href="https?://(?:www\.)?wuwonline\.com([^"]*)"', r'href="\1"', body)
     body = re.sub(r'<div[^>]*class="[^"]*sharedaddy[^"]*"[^>]*>.*?</div>\s*</div>', '', body, flags=re.S | re.I)
     body = re.sub(r'<style[^>]*>.*?</style>', '', body, flags=re.S | re.I)
+    # Normalise legacy ring-name order: "Johnny [The Unpredictable] Rodz" -> "[The Unpredictable] Johnny Rodz"
+    body = re.sub(
+        r'Johnny\s*([“"]|&#8220;|&quot;)\s*The\s+Unpredictable\s*([”"]|&#8221;|&quot;)\s*Rodz',
+        r'\1The Unpredictable\2 Johnny Rodz',
+        body, flags=re.I,
+    )
     return body.strip()
 
 def page_body(slug_path):
@@ -123,7 +229,7 @@ def head(title, desc, canonical):
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/styles.css?v=BUILD"/>
 <script type="application/ld+json">
-{{"@context":"https://schema.org","@type":["LocalBusiness","Organization","EducationalOrganization"],"name":"World of Unpredictable Wrestling","alternateName":["WUW"],"description":"Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz at Gleason's Gym.","url":"https://wuwonline.com/","telephone":"+1-718-797-2872","email":"{EMAIL}","address":{{"@type":"PostalAddress","streetAddress":"130 Water Street","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11201","addressCountry":"US"}},"founder":{{"@type":"Person","name":"Johnny Rodz","alternateName":"Johnny The Unpredictable Rodz","jobTitle":"Professional Wrestling Trainer","award":"WWE Hall of Fame, Class of 1996","birthName":"Jose Rodriguez"}},"openingHoursSpecification":[{{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Thursday"],"opens":"15:00","closes":"21:30"}},{{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"17:30"}}],"sameAs":["https://twitter.com/Rodzjohnny","https://www.facebook.com/WorldofUnpredictableWrestling"]}}
+{{"@context":"https://schema.org","@type":["LocalBusiness","Organization","EducationalOrganization"],"name":"World of Unpredictable Wrestling","alternateName":["WUW"],"description":"Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz at Gleason's Gym.","url":"https://wuwonline.com/","telephone":"+1-718-797-2872","email":"{EMAIL}","address":{{"@type":"PostalAddress","streetAddress":"130 Water Street","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11201","addressCountry":"US"}},"founder":{{"@type":"Person","name":"Johnny Rodz","alternateName":"The Unpredictable Johnny Rodz","jobTitle":"Professional Wrestling Trainer","award":"WWE Hall of Fame, Class of 1996","birthName":"Jose Rodriguez"}},"openingHoursSpecification":[{{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Thursday"],"opens":"15:00","closes":"21:30"}},{{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"17:30"}}],"sameAs":["https://twitter.com/Rodzjohnny","https://www.facebook.com/WorldofUnpredictableWrestling"]}}
 </script>
 </head>
 <body>
@@ -164,10 +270,14 @@ def head(title, desc, canonical):
 '''
 
 def footer():
+    fed_strip = ' · '.join(
+        f'<a href="/network/{f["slug"]}/" rel="noopener">{H.escape(f["host"])}</a>'
+        for f in FEDERATION
+    )
     return f'''
 <footer class="colophon">
   <div class="colophon-frame">
-    <div class="col-brand"><img src="/img/logo.png" alt="WUW" class="col-logo" /><span class="col-tag">World Of Unpredictable Wrestling · est. 2016</span></div>
+    <div class="col-brand"><img src="/img/logo.png" alt="WUW" class="col-logo" /><span class="col-tag">World Of Unpredictable Wrestling · est. 1980s</span></div>
     <div class="col-contact">
       <p class="col-h">Train · Brooklyn</p>
       <p><a href="tel:7187972872">{PHONE}</a></p>
@@ -179,6 +289,10 @@ def footer():
       <p><a href="https://twitter.com/Rodzjohnny" target="_blank" rel="noopener me">Twitter · @Rodzjohnny</a></p>
       <p><a href="https://www.facebook.com/WorldofUnpredictableWrestling" target="_blank" rel="noopener me">Facebook</a></p>
     </div>
+  </div>
+  <div class="col-network" aria-label="Across the network">
+    <span class="cn-label">Across the network</span>
+    <span class="cn-links">{fed_strip}</span>
   </div>
   <div class="col-fine"><p>© <span id="year">2026</span> World of Unpredictable Wrestling. All rights reserved.</p><p>Founded by Johnny Rodz · WWE Hall of Fame Class of 1996 · <a href="/in-the-news/">Press &amp; media →</a></p></div>
 </footer>
@@ -203,7 +317,7 @@ def render_home():
         <span class="ph-line"><span class="ph-word ph-w2">with the</span></span>
         <span class="ph-line"><span class="ph-word ph-w3 ph-em">Unpredictable</span></span>
       </h1>
-      <p class="ph-sub"><em>Johnny "The Unpredictable" Rodz</em> — WWE Hall of Fame Class of 1996, MSG-circuit veteran, the Brooklyn trainer behind Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich and 400+ professional wrestlers.</p>
+      <p class="ph-sub"><em>The Unpredictable Johnny Rodz</em> — WWE Hall of Fame Class of 1996, MSG-circuit veteran, the Brooklyn trainer behind Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich and 400+ professional wrestlers.</p>
     </div>
   </section>
 
@@ -245,7 +359,7 @@ def render_home():
       <div class="mj-photo"><img src="/img/meet-johnny.jpg" alt="Johnny Rodz at Gleason's Gym" loading="lazy"/></div>
       <div class="mj-body">
         <p class="ps-eyebrow">Meet Johnny</p>
-        <h2 class="mj-h">Johnny <em>"The Unpredictable"</em> Rodz</h2>
+        <h2 class="mj-h"><em>The Unpredictable</em> Johnny Rodz</h2>
         <p class="mj-lede">WWE Hall of Fame, Class of 1996. Born José Rodriguez in Brooklyn. Four decades on the MSG circuit and across the WWF — then four more decades quietly building the next generation of pro wrestlers.</p>
         <p class="mj-bio">If you've watched WWE, ECW, TNA, AEW or Impact in the last twenty years you've watched a Johnny Rodz student. WUW's the school he runs out of <strong>Gleason's Gym</strong> — the same Brooklyn boxing temple that's produced world champions for decades.</p>
         <dl class="mj-contact">
@@ -353,20 +467,74 @@ def render_contact():
 </div></main>
 ''' + footer()
 
+OUTLETS = {
+    'mondaynightwrestling.com': ('Monday Night Wrestling', '#0a0a0a', '#ffd700'),
+    'fox5ny.com':               ('Fox 5 NY',          '#003c71', '#ffffff'),
+    'fox29.com':                ('Fox 29',            '#003c71', '#ffffff'),
+    'newsweek.com':             ('Newsweek',          '#f72717', '#ffffff'),
+    'newsbreak.com':            ('NewsBreak',         '#ee2944', '#ffffff'),
+    'gettyimages.com':          ('Getty Images',      '#000000', '#ffffff'),
+    'spotify.com':              ('Spotify · Podcast', '#1ed760', '#0a0a0a'),
+    'open.spotify.com':         ('Spotify · Podcast', '#1ed760', '#0a0a0a'),
+}
+
+def yt_id_from(url):
+    m = re.search(r'(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/|shorts/))([A-Za-z0-9_-]{6,15})', url)
+    return m.group(1) if m else ''
+
+def news_card(L):
+    url = L.get('url') or ''
+    anchor = (L.get('anchor') or '').strip()
+    host = url.split('://',1)[-1].split('/',1)[0].replace('www.','').replace('m.','').lower()
+    yt = yt_id_from(url)
+    kind, bg, fg = OUTLETS.get(host, (host, '#1a1a1a', '#f4f0e8'))
+    if yt:
+        kind = 'YouTube · Video'
+        media = f'<div class="nc-media nc-media-yt"><img src="https://img.youtube.com/vi/{yt}/hqdefault.jpg" alt="" loading="lazy"/><span class="nc-play" aria-hidden="true">&#9658;</span></div>'
+    elif 'spotify' in host:
+        media = f'<div class="nc-media nc-media-badge" style="background:{bg};color:{fg}"><span class="nc-badge-mark">&#9654;</span><span class="nc-badge-name">Spotify</span></div>'
+    elif 'gettyimages' in host:
+        media = f'<div class="nc-media nc-media-badge" style="background:{bg};color:{fg}"><span class="nc-badge-name" style="font-family:Georgia,serif;font-style:italic">Getty</span></div>'
+    else:
+        fav = f'https://www.google.com/s2/favicons?domain={host}&sz=128'
+        media = f'<div class="nc-media nc-media-badge" style="background:{bg};color:{fg}"><img class="nc-fav" src="{fav}" alt="" loading="lazy" onerror="this.style.display=\'none\'"/><span class="nc-badge-name">{H.escape(kind)}</span></div>'
+    title = anchor or kind
+    return f'''<a class="news-card" href="{H.escape(url)}" target="_blank" rel="noopener">
+      {media}
+      <div class="nc-body">
+        <span class="nc-kind">{H.escape(kind)}</span>
+        <h3 class="nc-title">{H.escape(title[:140])}</h3>
+        <span class="nc-host">{H.escape(host)}<span class="nc-arrow" aria-hidden="true">&rarr;</span></span>
+      </div>
+    </a>'''
+
 def render_news():
-    items = ''.join(f'<li><a href="{H.escape(L["url"])}" target="_blank" rel="noopener">{H.escape(L["anchor"])[:90]}</a></li>' for L in mnw_links + press_links + yt_spotify_links)
+    seen, links = set(), []
+    for L in (yt_spotify_links + press_links + mnw_links):
+        u = (L.get('url') or '').split('?')[0]
+        if u and u not in seen:
+            seen.add(u); links.append(L)
+    yt_count    = sum(1 for L in links if yt_id_from(L.get('url','')))
+    pod_count   = sum(1 for L in links if 'spotify' in (L.get('url','') or ''))
+    press_count = len(links) - yt_count - pod_count
+    cards = ''.join(news_card(L) for L in links)
     return head('WUW In the News · Press', "WUW press coverage on Monday Night Wrestling, Fox 5, podcasts and interviews featuring Johnny Rodz, alumni, and the Brooklyn wrestling scene.", 'https://wuwonline.com/in-the-news/') + f'''
-<main class="page"><div class="page-frame">
-  <header class="page-head"><p class="ps-eyebrow">Press &amp; mentions</p><h1 class="page-h">In the News</h1><p class="page-lede">Press, podcasts, and articles featuring WUW, Johnny Rodz, and the alumni network.</p></header>
-  <ol class="news-list">{items}</ol>
-</div></main>
+<main class="page news-page">
+  <header class="page-head">
+    <p class="ps-eyebrow">Press &amp; mentions · {len(links)} pieces</p>
+    <h1 class="page-h">In the News</h1>
+    <p class="page-lede">Press, podcasts, and video featuring WUW, Johnny Rodz, and the alumni network.</p>
+    <div class="news-meta"><span><strong>{press_count}</strong> press pieces</span><span><strong>{yt_count}</strong> videos</span><span><strong>{pod_count}</strong> podcast episodes</span></div>
+  </header>
+  <section class="news-grid">{cards}</section>
+</main>
 ''' + footer()
 
 def render_rodz():
     body = page_body('/johnny-rodz/')
     bio_facts = '''
 <h2>The Career</h2>
-<p>Born <strong>José Rodriguez</strong> in New York City, Johnny &#8220;The Unpredictable&#8221; Rodz came up through Antonino &#8220;Argentina&#8221; Rocca&#8217;s school in the 1960s — one of the same lineages that produced an entire generation of Latino professional wrestlers in the New York territory.</p>
+<p>Born <strong>José Rodriguez</strong> in New York City, &#8220;The Unpredictable&#8221; Johnny Rodz came up through Antonino &#8220;Argentina&#8221; Rocca&#8217;s school in the 1960s — one of the same lineages that produced an entire generation of Latino professional wrestlers in the New York territory.</p>
 <p>He spent <strong>nearly two decades</strong> on the World Wide Wrestling Federation / WWF roster, wrestling out of Madison Square Garden through the &#8217;70s and into the mid-&#8217;80s. He shared the ring with <strong>Bruno Sammartino, Bob Backlund, Pat Patterson, Tony Garea, Pedro Morales, Andre the Giant</strong> and most of the era&#8217;s headliners.</p>
 <p>His character was simple and unforgettable: <em>he&#8217;d do anything to win.</em> Eye rakes, foreign objects, refusing to break a hold — anything. The &#8220;unpredictable&#8221; nickname stuck because the audience genuinely never knew what he was about to pull. He was the <strong>blueprint for the heel-with-no-rules archetype</strong> that ECW and AEW would later make the centre of the sport.</p>
 <h2>WWE Hall of Fame · 1996</h2>
@@ -390,19 +558,97 @@ def render_rodz():
 <p class="rodz-cta-line"><a href="/contact/">Train with Johnny &rarr;</a> &nbsp; · &nbsp; <a href="/alumni/">See the alumni roll &rarr;</a></p>
 '''
     extra = body if body and len(body) > 200 else ''
-    return head("Johnny Rodz · WWE Hall of Famer · WUW Founder", "Johnny 'The Unpredictable' Rodz — born José Rodriguez. WWE Hall of Fame Class of 1996. Founder of World of Unpredictable Wrestling at Gleason's Gym Brooklyn. Trained 400+ professional wrestlers including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.", 'https://wuwonline.com/johnny-rodz/') + f'''
+    return head("The Unpredictable Johnny Rodz · WWE Hall of Famer · WUW Founder", "The Unpredictable Johnny Rodz — born José Rodriguez. WWE Hall of Fame Class of 1996. Founder of World of Unpredictable Wrestling at Gleason's Gym Brooklyn. Trained 400+ professional wrestlers including Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich.", 'https://wuwonline.com/johnny-rodz/') + f'''
 <main class="page rodz-page">
   <section class="rodz-hero">
     <picture class="rodz-hero-image" aria-hidden="true"><img src="/img/meet-johnny.jpg" alt="" loading="eager"/></picture>
     <div class="rodz-hero-veil"></div>
     <div class="rodz-hero-frame">
       <p class="ps-eyebrow">WWE Hall of Fame · Class of 1996</p>
-      <h1 class="rodz-h">Johnny <em>"The Unpredictable"</em> Rodz</h1>
+      <h1 class="rodz-h"><em>The Unpredictable</em> Johnny Rodz</h1>
       <p class="rodz-sub">Born José Rodriguez · MSG-circuit veteran · Brooklyn trainer · founder of WUW.</p>
     </div>
   </section>
   <div class="page-frame rodz-body">{bio_facts}</div>
   {('<section class="wp-extra"><div class="wp-extra-frame"><h2 class="wp-extra-h">Notes from the WUW archive</h2><div class="wp-extra-body">' + extra + '</div></div></section>') if extra else ''}
+</main>
+''' + footer()
+
+
+def render_israel_joffe():
+    """Aggregator page for /israel-joffe/ — bio + linked grid of every dated israel-joffe* post + DocumentCloud + Substack backlinks. Off nav."""
+    canonical = 'https://wuwonline.com/israel-joffe/'
+    # gather every post whose URL contains 'israel-joffe' or 'juanito'
+    ij_posts = [p for p in posts if any(k in p['url'].lower() for k in ('israel-joffe','juanito'))]
+    # newest first
+    ij_posts.sort(key=lambda p: p['date'], reverse=True)
+    posts_grid = ''.join(
+        f'<a class="ij-post" href="{H.escape(post_url(p))}"><span class="ij-date">{H.escape(p["date"][:10])}</span><span class="ij-title">{H.escape(p.get("title") or post_url(p).strip("/").split("/")[-1].replace("-"," ").title())}</span></a>'
+        for p in ij_posts
+    )
+    dc_items = ''.join(
+        f'<li><a href="{H.escape(u)}" target="_blank" rel="noopener nofollow">{H.escape(label)}</a></li>'
+        for u, label in DOCUMENTCLOUD
+    )
+    sub_items = ''.join(
+        f'<li><a href="{H.escape(u)}" target="_blank" rel="noopener me">{H.escape(label)}</a></li>'
+        for u, label in SUBSTACKS
+    )
+    return head(
+        'Israel Joffe · WUW · Gleason\'s Gym Training Archive',
+        'Israel Joffe at WUW — training archive, DocumentCloud research filings (Atlantic City, Lubavitcher Rebbe letter, FDIC), Substack writing, and his personal site network. Years of dated posts from inside Gleason\'s Gym.',
+        canonical,
+    ) + f'''
+<main class="page ij-page">
+  <header class="page-head ij-head">
+    <p class="ps-eyebrow">WUW Family · Training Archive</p>
+    <h1 class="page-h">Israel Joffe</h1>
+    <p class="page-lede">A long-running training archive — Israel Joffe inside Gleason's Gym alongside the WUW family, plus the DocumentCloud and Substack writing he's published over the same years.</p>
+  </header>
+
+  <div class="page-frame ij-body">
+    <section class="ij-bio">
+      <h2>About</h2>
+      <p>Israel Joffe is a New York–based media executive, IT specialist, and FDIC-credentialed firefighter whose work has appeared in <strong>Fox 5</strong>, <strong>Newsweek</strong>, <strong>Fox 29</strong>, and <strong>NewsBreak</strong>. He's been training at Gleason's Gym alongside the WUW family for years — the dated entries below are field reports from those sessions and the related coverage that came out of them.</p>
+      <p>For the full picture of his work outside the ring, his editorial home is <a href="https://israeljoffe.com" target="_blank" rel="noopener">israeljoffe.com</a> (media, press, IT) and the BJJ-and-fitness side is at <a href="https://israeljoffe.org" target="_blank" rel="noopener">israeljoffe.org</a>.</p>
+    </section>
+
+    <section class="ij-archive">
+      <h2>WUW Archive · Israel Joffe entries</h2>
+      <p class="ij-archive-meta">{len(ij_posts)} dated posts · newest first</p>
+      <div class="ij-grid">{posts_grid}</div>
+    </section>
+
+    <section class="ij-refs">
+      <h2>Research filings · DocumentCloud</h2>
+      <p>Public document filings tagged Israel Joffe — kept on DocumentCloud as a permanent research record.</p>
+      <ul class="ij-link-list">{dc_items}</ul>
+
+      <h2>Long-form · Substack</h2>
+      <ul class="ij-link-list">{sub_items}</ul>
+    </section>
+  </div>
+</main>
+''' + footer()
+
+
+def render_network_article(fed):
+    """One short SEO article per federation site — /network/{slug}/. Off nav, in sitemap."""
+    canonical = f"https://wuwonline.com/network/{fed['slug']}/"
+    title = f"{fed['name']} · Across the WUW Network"
+    return head(title, fed['lede'], canonical) + f'''
+<main class="page net-article">
+  <header class="page-head">
+    <p class="ps-eyebrow">Across the network · {H.escape(fed['tag'])}</p>
+    <h1 class="page-h">{H.escape(fed['name'])}</h1>
+    <p class="page-lede">{H.escape(fed['lede'])}</p>
+  </header>
+  <div class="page-frame net-body">
+    {fed['body']}
+    <p class="net-cta"><a class="link-cta" href="https://{fed['host']}" target="_blank" rel="noopener">Visit {H.escape(fed['host'])} &rarr;</a></p>
+    <hr class="net-rule"/>
+    <p class="net-foot"><a href="/israel-joffe/">Back to Israel Joffe at WUW</a> · <a href="/">WUW home</a></p>
+  </div>
 </main>
 ''' + footer()
 
@@ -640,6 +886,26 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .news-list{display:grid;gap:0;border-top:1px solid var(--rule);max-width:880px;margin:0 auto}
 .news-list li{padding:18px 0;border-bottom:1px solid var(--rule)}
 .news-list a{font-size:16px;color:var(--ink);border-bottom:1px solid transparent;word-break:break-word;display:inline-block}
+/* News page — preview cards */
+.news-meta{display:flex;flex-wrap:wrap;gap:18px;margin-top:16px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-mute)}
+.news-meta strong{font-family:var(--display);font-size:18px;color:var(--accent);font-weight:400;margin-right:4px;letter-spacing:0;text-transform:none}
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:1240px;margin:48px auto 80px;padding:0 var(--frame-pad)}
+.news-card{display:flex;flex-direction:column;background:var(--bone-soft);border:1px solid var(--rule);overflow:hidden;transition:transform .35s ease,box-shadow .35s ease,border-color .35s}
+.news-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(0,0,0,.35);border-color:var(--accent)}
+.nc-media{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0a0a}
+.nc-media img{width:100%;height:100%;object-fit:cover;transition:transform .8s ease}
+.news-card:hover .nc-media img{transform:scale(1.05)}
+.nc-media-yt .nc-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,.92);text-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none}
+.nc-media-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center;line-height:1.1}
+.nc-media-badge .nc-fav{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.12);padding:6px}
+.nc-media-badge .nc-badge-name{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.nc-media-badge .nc-badge-mark{font-size:32px;line-height:1;opacity:.92}
+.nc-body{display:flex;flex-direction:column;gap:8px;padding:18px 18px 22px;flex:1}
+.nc-kind{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.nc-title{font-family:var(--display);font-size:19px;line-height:1.22;color:var(--ink);text-transform:none;letter-spacing:-.005em;font-weight:500;margin:0}
+.nc-host{margin-top:auto;font-size:11px;color:var(--ink-mute);letter-spacing:.04em;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--rule)}
+.nc-arrow{color:var(--accent);font-size:14px;transition:transform .3s}
+.news-card:hover .nc-arrow{transform:translateX(4px)}
 .news-list a:hover{color:var(--accent);border-color:var(--accent)}
 .post-page{padding:clamp(120px,16vh,160px) var(--frame-pad) clamp(64px,10vh,100px);max-width:760px;margin:0 auto}
 .post-head{margin-bottom:32px;padding-bottom:18px;border-bottom:2px solid var(--accent)}
@@ -688,7 +954,39 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .bg-refs{padding:14px var(--frame-pad);border-top:1px solid rgba(244,240,232,.06);font-size:10px;line-height:1.8;color:rgba(244,240,232,.32);display:flex;flex-wrap:wrap;gap:6px 14px}
 .bg-refs a{color:rgba(244,240,232,.42);transition:color .25s}
 .bg-refs a:hover{color:var(--accent)}
-@media (max-width:900px){.primary{display:none}.menu-toggle{display:flex!important}.wm-tag{display:none}.colophon-frame{grid-template-columns:1fr;gap:32px}.lr-grid,.ab-grid{grid-template-columns:1fr;gap:32px}.lr-img,.ab-photo{max-width:420px;aspect-ratio:1/1;margin:0 auto}.ht-2{padding-left:0}}
+/* Across-the-network strip — visible but de-emphasised, real <a> tags so SEO juice flows */
+.col-network{padding:14px var(--frame-pad);border-top:1px solid rgba(244,240,232,.08);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;font-size:11px;line-height:1.8}
+.col-network .cn-label{color:rgba(244,240,232,.45);letter-spacing:.22em;text-transform:uppercase;font-weight:500;flex-shrink:0}
+.col-network .cn-links{color:rgba(244,240,232,.42)}
+.col-network .cn-links a{color:rgba(244,240,232,.5);transition:color .25s;border:none}
+.col-network .cn-links a:hover{color:var(--accent)}
+/* /israel-joffe/ aggregator page */
+.ij-head{max-width:880px}
+.ij-body{max-width:980px;margin:0 auto;padding:0 var(--frame-pad) 80px}
+.ij-bio h2,.ij-archive h2,.ij-refs h2{font-family:var(--display);font-size:clamp(28px,3.5vw,40px);text-transform:uppercase;letter-spacing:-.005em;margin:48px 0 16px;color:var(--ink)}
+.ij-bio p,.ij-refs p{font-size:16px;line-height:1.75;margin-bottom:14px;max-width:760px}
+.ij-archive-meta{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:20px}
+.ij-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0;border-top:1px solid var(--rule)}
+.ij-post{display:flex;flex-direction:column;gap:6px;padding:18px 20px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);transition:background .3s,padding-left .3s}
+.ij-post:hover{background:var(--bone-soft);padding-left:26px}
+.ij-date{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.ij-title{font-family:var(--display);font-size:18px;line-height:1.2;color:var(--ink);text-transform:capitalize}
+.ij-link-list{margin:0 0 28px;border-top:1px solid var(--rule)}
+.ij-link-list li{padding:14px 0;border-bottom:1px solid var(--rule)}
+.ij-link-list li a{color:var(--ink);font-size:15.5px;border-bottom:1px solid transparent;transition:border-color .25s,color .25s}
+.ij-link-list li a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+/* /network/{slug}/ SEO articles */
+.net-article .page-h{max-width:920px}
+.net-body{max-width:760px;margin:0 auto;padding:0 var(--frame-pad) 80px;font-size:16px;line-height:1.78}
+.net-body p{margin-bottom:16px}
+.net-body a{color:var(--ink);border-bottom:1px solid var(--accent);transition:color .25s}
+.net-body a:hover{color:var(--accent)}
+.net-cta{margin-top:24px}
+.net-cta .link-cta{display:inline-block;padding:12px 22px;border:1px solid var(--ink);font-size:11px;letter-spacing:.28em;text-transform:uppercase;border-bottom:1px solid var(--ink)}
+.net-cta .link-cta:hover{background:var(--ink);color:var(--bone)}
+.net-rule{border:none;border-top:1px solid var(--rule);margin:36px 0 24px}
+.net-foot{font-size:13px;color:var(--ink-mute)}
+@media (max-width:900px){.primary{display:none}.menu-toggle{display:flex!important}.wm-tag{display:none}.colophon-frame{grid-template-columns:1fr;gap:32px}.lr-grid,.ab-grid{grid-template-columns:1fr;gap:32px}.lr-img,.ab-photo{max-width:420px;aspect-ratio:1/1;margin:0 auto}.ht-2{padding-left:0}.col-network{flex-direction:column;align-items:flex-start;gap:6px}.ij-grid{grid-template-columns:1fr}}
 '''
 
 def write(path, content):
@@ -705,6 +1003,9 @@ write('about/index.html', append_wp_extras(render_about(), '/about/'))
 write('johnny-rodz/index.html', render_rodz())
 write('contact/index.html', append_wp_extras(render_contact(), '/contact/'))
 write('in-the-news/index.html', append_wp_extras(render_news(), '/in-the-news/'))
+write('israel-joffe/index.html', render_israel_joffe())
+for fed in FEDERATION:
+    write(f"network/{fed['slug']}/index.html", render_network_article(fed))
 write('styles.css', render_styles())
 
 post_count = 0
@@ -715,8 +1016,10 @@ for p in posts:
 sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
 for path, prio in [('/', 1.0), ('/johnny-rodz/', 0.95), ('/about/', 0.85), ('/alumni/', 0.95),
                    ('/roster/', 0.8), ('/title-holders/', 0.7), ('/events/', 0.85),
-                   ('/contact/', 0.95), ('/in-the-news/', 0.7)]:
+                   ('/contact/', 0.95), ('/in-the-news/', 0.7), ('/israel-joffe/', 0.7)]:
     sm.append(f'  <url><loc>https://wuwonline.com{path}</loc><priority>{prio}</priority></url>')
+for fed in FEDERATION:
+    sm.append(f'  <url><loc>https://wuwonline.com/network/{fed["slug"]}/</loc><priority>0.4</priority></url>')
 for p in posts:
     sm.append(f'  <url><loc>https://wuwonline.com{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.5</priority></url>')
 sm.append('</urlset>')
@@ -724,4 +1027,4 @@ write('sitemap.xml', '\n'.join(sm))
 write('robots.txt', 'User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n\nSitemap: https://wuwonline.com/sitemap.xml\n')
 write('favicon.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0a0a0a"/><text x="32" y="44" font-family="Anton, Impact, sans-serif" font-size="38" fill="#f4f0e8" text-anchor="middle" letter-spacing="-1"><tspan fill="#d2222d">W</tspan>UW</text></svg>')
 write('_headers', '/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/styles.css\n  Cache-Control: public, max-age=300\n\n/img/*\n  Cache-Control: public, max-age=86400\n')
-print(f'  built {post_count} post pages + 8 named pages + sitemap')
+print(f'  built {post_count} post pages + 8 named pages + /israel-joffe/ + {len(FEDERATION)} network articles + sitemap')
