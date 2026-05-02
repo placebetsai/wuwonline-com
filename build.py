@@ -531,7 +531,7 @@ def render_about():
 
 def render_contact():
     sched = ''.join(f'<li><span>{d}</span><span>{t}</span></li>' for d, t in SCHEDULE)
-    return head('Contact WUW · Train at Gleason\'s Gym', f'Reach Johnny Rodz directly. Call {PHONE} or visit Gleason\'s Gym, 130 Water Street, Brooklyn.', 'https://wuwonline.com/contact/') + f'''
+    return head('Contact WUW · Train at Gleason\'s Gym', f'Reach Johnny Rodz directly. Call {PHONE}, email, or use the contact form. Gleason\'s Gym, 130 Water Street, Brooklyn.', 'https://wuwonline.com/contact/') + f'''
 <main class="page"><div class="page-frame">
   <header class="page-head"><p class="ps-eyebrow">Reach out</p><h1 class="page-h">Contact</h1><p class="page-lede">Ready to train? Have a question? Reach out directly — we respond to everyone.</p></header>
   <div class="ct-grid">
@@ -540,8 +540,41 @@ def render_contact():
     <div class="ct-card"><p class="ct-h">📍 Visit</p><p class="ct-big" style="font-size:22px">{ADDR_LINE_1}</p><p class="ct-d">{ADDR_LINE_2}</p></div>
     <div class="ct-card"><p class="ct-h">📅 Training Schedule</p><ul class="sch-list">{sched}</ul></div>
   </div>
+
+  <section class="ct-form-wrap" id="form">
+    <h2 class="ct-form-h">Send a message</h2>
+    <p class="ct-form-sub">Goes straight to Johnny's inbox. Usually answered within 24 hours.</p>
+    <form class="ct-form" action="https://formsubmit.co/{EMAIL}" method="POST">
+      <input type="hidden" name="_subject" value="WUW website inquiry"/>
+      <input type="hidden" name="_template" value="table"/>
+      <input type="hidden" name="_captcha" value="false"/>
+      <input type="hidden" name="_next" value="https://wuwonline.com/contact/?sent=1"/>
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off"/>
+      <div class="ct-row">
+        <label><span>Name</span><input type="text" name="name" required autocomplete="name"/></label>
+        <label><span>Email</span><input type="email" name="email" required autocomplete="email"/></label>
+      </div>
+      <label><span>Phone (optional)</span><input type="tel" name="phone" autocomplete="tel"/></label>
+      <label><span>What's this about?</span>
+        <select name="topic" required>
+          <option value="">Choose one…</option>
+          <option>Training — I want to start</option>
+          <option>Booking / Show / Event</option>
+          <option>Press / Interview</option>
+          <option>Sponsorship</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label><span>Message</span><textarea name="message" rows="5" required placeholder="Tell us a little about what you're looking for…"></textarea></label>
+      <button type="submit" class="ct-submit">Send to Johnny</button>
+      <p class="ct-fine">Your info goes to {EMAIL} only. No marketing list, no spam.</p>
+    </form>
+    <div class="ct-sent" id="ct-sent" hidden>✓ Thanks — your message is on its way to Johnny. Expect a reply within a day.</div>
+  </section>
+
   <p class="rl-foot">Open to everyone. Men and women. All experience levels welcome.</p>
 </div></main>
+<script>if(location.search.indexOf('sent=1')>-1){{var el=document.getElementById('ct-sent');if(el)el.hidden=false;el&&el.scrollIntoView({{behavior:'smooth',block:'center'}});}}</script>
 ''' + footer()
 
 OUTLETS = {
@@ -963,6 +996,23 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}ul,ol{list
 .ct-d{font-size:14px;color:var(--ink);opacity:.7}
 .sch-list li{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px dashed rgba(0,0,0,.1)}
 .sch-list li span:first-child{font-weight:600}
+/* Contact form */
+.ct-form-wrap{max-width:680px;margin:64px auto 24px;padding:40px 36px;background:var(--bone-soft);border:1px solid rgba(0,0,0,.08);border-top:4px solid var(--accent)}
+.ct-form-h{font-family:var(--display),Anton,sans-serif;font-size:clamp(28px,4vw,40px);text-transform:uppercase;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+.ct-form-sub{color:var(--ink);opacity:.7;font-size:15px;margin-bottom:28px}
+.ct-form{display:flex;flex-direction:column;gap:14px}
+.ct-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:540px){.ct-row{grid-template-columns:1fr}}
+.ct-form label{display:flex;flex-direction:column;gap:6px}
+.ct-form label span{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);opacity:.7;font-weight:600}
+.ct-form input,.ct-form select,.ct-form textarea{font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid rgba(0,0,0,.18);background:#fff;color:var(--ink);border-radius:2px;transition:border-color .2s,box-shadow .2s;width:100%}
+.ct-form input:focus,.ct-form select:focus,.ct-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(210,34,45,.12)}
+.ct-form textarea{resize:vertical;min-height:120px;font-family:inherit}
+.ct-submit{margin-top:8px;padding:16px 28px;background:var(--accent);color:#fff;border:none;font-family:var(--display),Anton,sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:background .2s,transform .15s}
+.ct-submit:hover{background:#a01820}
+.ct-submit:active{transform:translateY(1px)}
+.ct-fine{font-size:12px;color:var(--ink);opacity:.55;margin-top:4px;text-align:center}
+.ct-sent{max-width:680px;margin:24px auto;padding:18px 22px;background:#1f3d1f;color:#cfe9c9;border-left:4px solid #4caf50;font-size:15px}
 .news-list{display:grid;gap:0;border-top:1px solid var(--rule);max-width:880px;margin:0 auto}
 .news-list li{padding:18px 0;border-bottom:1px solid var(--rule)}
 .news-list a{font-size:16px;color:var(--ink);border-bottom:1px solid transparent;word-break:break-word;display:inline-block}
