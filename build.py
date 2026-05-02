@@ -201,36 +201,113 @@ def append_wp_extras(html_str, slug):
     extra = '<section class="wp-extra"><div class="wp-extra-frame"><h2 class="wp-extra-h">More from the WUW archive</h2><div class="wp-extra-body">' + body + '</div></div></section>'
     return html_str.replace('</main>', extra + '</main>', 1)
 
-def head(title, desc, canonical):
-    og = 'https://wuwonline.com/img/og-default.jpg'
+LOCAL_BUSINESS_LD = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "Organization", "EducationalOrganization", "SportsActivityLocation"],
+    "name": "World of Unpredictable Wrestling",
+    "alternateName": ["WUW", "WUW Brooklyn"],
+    "description": "Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz at Gleason's Gym.",
+    "url": "https://wuwonline.com/",
+    "telephone": "+1-718-797-2872",
+    "email": EMAIL,
+    "image": "https://wuwonline.com/img/og-default-square.jpg",
+    "logo": "https://wuwonline.com/img/logo.png",
+    "address": {"@type": "PostalAddress", "streetAddress": "130 Water Street", "addressLocality": "Brooklyn", "addressRegion": "NY", "postalCode": "11201", "addressCountry": "US"},
+    "geo": {"@type": "GeoCoordinates", "latitude": 40.7028, "longitude": -73.9897},
+    "founder": {"@type": "Person", "name": "Johnny Rodz", "alternateName": "The Unpredictable Johnny Rodz", "jobTitle": "Professional Wrestling Trainer", "award": "WWE Hall of Fame, Class of 1996", "birthName": "Jose Rodriguez"},
+    "openingHoursSpecification": [
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Thursday"], "opens": "15:00", "closes": "21:30"},
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "12:00", "closes": "17:30"},
+    ],
+    "sameAs": [
+        "https://twitter.com/Rodzjohnny",
+        "https://www.facebook.com/WorldofUnpredictableWrestling",
+        "https://www.mondaynightwrestling.com/",
+    ],
+}
+
+def head(title, desc, canonical, og_image=None, og_type='website', published=None, modified=None, post_title=None):
+    og = og_image or 'https://wuwonline.com/img/og-default.jpg'
+    og_sq = 'https://wuwonline.com/img/og-default-square.jpg'
+    is_article = og_type == 'article'
+    ld_blocks = [LOCAL_BUSINESS_LD]
+    if is_article and published:
+        ld_blocks.append({
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            "headline": post_title or title,
+            "datePublished": published,
+            "dateModified": modified or published,
+            "url": canonical,
+            "image": og,
+            "author": {"@type": "Organization", "name": "World of Unpredictable Wrestling", "url": "https://wuwonline.com/"},
+            "publisher": {"@type": "Organization", "name": "World of Unpredictable Wrestling", "url": "https://wuwonline.com/", "logo": {"@type": "ImageObject", "url": "https://wuwonline.com/img/logo.png"}},
+            "mainEntityOfPage": {"@type": "WebPage", "@id": canonical},
+        })
+    else:
+        ld_blocks.append({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "World of Unpredictable Wrestling",
+            "url": "https://wuwonline.com/",
+            "potentialAction": {"@type": "SearchAction", "target": "https://wuwonline.com/?q={search_term_string}", "query-input": "required name=search_term_string"},
+        })
+    ld_json = '\n'.join(f'<script type="application/ld+json">{json.dumps(b, separators=(",", ":"))}</script>' for b in ld_blocks)
+    article_metas = ''
+    if is_article:
+        article_metas = (
+            (f'<meta property="article:published_time" content="{published}T00:00:00Z"/>\n' if published else '')
+            + (f'<meta property="article:modified_time" content="{modified}T00:00:00Z"/>\n' if modified else '')
+            + '<meta property="article:author" content="Johnny Rodz"/>\n<meta property="article:section" content="Pro Wrestling"/>\n'
+        )
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>{H.escape(title)}</title>
 <meta name="description" content="{H.escape(desc)}"/>
 <meta name="keywords" content="Johnny Rodz, WWE Hall of Fame, professional wrestling training Brooklyn, Gleason's Gym, Tazz, Tommy Dreamer, D-Von Dudley, Big Cass, Masha Slamovich, learn pro wrestling NYC, WUW, World of Unpredictable Wrestling"/>
+<meta name="author" content="World of Unpredictable Wrestling"/>
 <meta name="theme-color" content="#0a0a0a"/>
-<meta name="robots" content="index, follow, max-image-preview:large"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 <meta name="geo.region" content="US-NY"/>
 <meta name="geo.placename" content="Brooklyn, New York"/>
+<meta name="geo.position" content="40.7028;-73.9897"/>
+<meta name="ICBM" content="40.7028, -73.9897"/>
 <link rel="canonical" href="{canonical}"/>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-<meta property="og:type" content="website"/>
+<meta property="og:type" content="{og_type}"/>
 <meta property="og:title" content="{H.escape(title)}"/>
 <meta property="og:description" content="{H.escape(desc)}"/>
 <meta property="og:url" content="{canonical}"/>
 <meta property="og:site_name" content="World of Unpredictable Wrestling"/>
+<meta property="og:locale" content="en_US"/>
 <meta property="og:image" content="{og}"/>
+<meta property="og:image:secure_url" content="{og}"/>
+<meta property="og:image:type" content="image/jpeg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="World of Unpredictable Wrestling — Train with Johnny Rodz, WWE Hall of Fame"/>
+<meta property="og:image" content="{og_sq}"/>
+<meta property="og:image:type" content="image/jpeg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="1200"/>
+<meta property="og:image:alt" content="WUW (square)"/>
 <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="{H.escape(title)}"/>
+<meta name="twitter:description" content="{H.escape(desc)}"/>
 <meta name="twitter:image" content="{og}"/>
+<meta name="twitter:image:alt" content="World of Unpredictable Wrestling — Brooklyn"/>
 <meta name="twitter:site" content="@Rodzjohnny"/>
+<meta name="twitter:creator" content="@Rodzjohnny"/>
+{article_metas}<meta name="apple-mobile-web-app-title" content="WUW"/>
+<meta name="application-name" content="WUW"/>
+<meta name="format-detection" content="telephone=no"/>
+<link rel="alternate" type="application/rss+xml" title="WUW — News &amp; Press" href="/feed.xml"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/styles.css?v=BUILD"/>
-<script type="application/ld+json">
-{{"@context":"https://schema.org","@type":["LocalBusiness","Organization","EducationalOrganization"],"name":"World of Unpredictable Wrestling","alternateName":["WUW"],"description":"Brooklyn's home of professional wrestling training. Founded by WWE Hall of Famer Johnny Rodz at Gleason's Gym.","url":"https://wuwonline.com/","telephone":"+1-718-797-2872","email":"{EMAIL}","address":{{"@type":"PostalAddress","streetAddress":"130 Water Street","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11201","addressCountry":"US"}},"founder":{{"@type":"Person","name":"Johnny Rodz","alternateName":"The Unpredictable Johnny Rodz","jobTitle":"Professional Wrestling Trainer","award":"WWE Hall of Fame, Class of 1996","birthName":"Jose Rodriguez"}},"openingHoursSpecification":[{{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Thursday"],"opens":"15:00","closes":"21:30"}},{{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"17:30"}}],"sameAs":["https://twitter.com/Rodzjohnny","https://www.facebook.com/WorldofUnpredictableWrestling"]}}
-</script>
+{ld_json}
 </head>
 <body>
 <header class="masthead" id="top">
@@ -656,7 +733,10 @@ def render_post(p):
     body = rewrite(p.get('body_html', ''))
     canonical = f'https://wuwonline.com{post_url(p)}'
     desc = (p.get('description') or H.unescape(re.sub(r'<[^>]+>', ' ', body)).strip())[:200] or p['title']
-    return head(p['title'] + ' · WUW', desc, canonical) + f'''
+    hero = p.get('hero')
+    og = f'https://wuwonline.com{img_map.get((hero or "").split("?")[0], hero)}' if hero else None
+    return head(p['title'] + ' · WUW', desc, canonical, og,
+                og_type='article', published=p.get('date'), modified=p.get('date'), post_title=p['title']) + f'''
 <main class="post-page"><article class="post">
   <header class="post-head">
     {f'<p class="post-date">{p["date"]}</p>' if p.get('date') else ''}
@@ -1013,18 +1093,53 @@ for p in posts:
     write(post_url(p).lstrip('/') + 'index.html', render_post(p))
     post_count += 1
 
-sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemaps-image/1.1">']
 for path, prio in [('/', 1.0), ('/johnny-rodz/', 0.95), ('/about/', 0.85), ('/alumni/', 0.95),
                    ('/roster/', 0.8), ('/title-holders/', 0.7), ('/events/', 0.85),
                    ('/contact/', 0.95), ('/in-the-news/', 0.7), ('/israel-joffe/', 0.7)]:
-    sm.append(f'  <url><loc>https://wuwonline.com{path}</loc><priority>{prio}</priority></url>')
+    sm.append(f'  <url><loc>https://wuwonline.com{path}</loc><priority>{prio}</priority><changefreq>weekly</changefreq></url>')
 for fed in FEDERATION:
     sm.append(f'  <url><loc>https://wuwonline.com/network/{fed["slug"]}/</loc><priority>0.4</priority></url>')
 for p in posts:
-    sm.append(f'  <url><loc>https://wuwonline.com{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.5</priority></url>')
+    hero = p.get('hero')
+    img_xml = ''
+    if hero:
+        local = img_map.get(hero.split('?')[0], hero)
+        img_xml = f'<image:image><image:loc>https://wuwonline.com{local}</image:loc></image:image>'
+    sm.append(f'  <url><loc>https://wuwonline.com{post_url(p)}</loc><lastmod>{p["date"]}</lastmod><priority>0.5</priority>{img_xml}</url>')
 sm.append('</urlset>')
 write('sitemap.xml', '\n'.join(sm))
-write('robots.txt', 'User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n\nSitemap: https://wuwonline.com/sitemap.xml\n')
+
+write('robots.txt',
+      'User-agent: *\nAllow: /\n\n'
+      'User-agent: GPTBot\nDisallow: /\n'
+      'User-agent: ClaudeBot\nDisallow: /\n'
+      'User-agent: CCBot\nDisallow: /\n'
+      'User-agent: anthropic-ai\nDisallow: /\n'
+      'User-agent: PerplexityBot\nDisallow: /\n\n'
+      'Sitemap: https://wuwonline.com/sitemap.xml\n')
+
+# RSS feed (latest news/posts)
+from datetime import datetime as _dt
+def _rss_item(p):
+    canonical = f'https://wuwonline.com{post_url(p)}'
+    try: pub = _dt.strptime(p['date'], '%Y-%m-%d').strftime('%a, %d %b %Y 00:00:00 +0000')
+    except: pub = 'Wed, 01 Jan 2020 00:00:00 +0000'
+    desc_text = (p.get('description') or H.unescape(re.sub(r'<[^>]+>', ' ', p.get('body_html', '')))[:300]).strip()
+    return f'<item><title>{H.escape(p["title"])}</title><link>{canonical}</link><guid>{canonical}</guid><pubDate>{pub}</pubDate><description>{H.escape(desc_text)}</description></item>'
+rss_items = ''.join(_rss_item(p) for p in sorted(posts, key=lambda x: x.get('date',''), reverse=True)[:30])
+write('feed.xml', f'<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>World of Unpredictable Wrestling</title><link>https://wuwonline.com/</link><description>Train pro wrestling at Gleason\'s Gym Brooklyn with Johnny Rodz, WWE Hall of Famer.</description><language>en-US</language>{rss_items}</channel></rss>')
+
 write('favicon.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0a0a0a"/><text x="32" y="44" font-family="Anton, Impact, sans-serif" font-size="38" fill="#f4f0e8" text-anchor="middle" letter-spacing="-1"><tspan fill="#d2222d">W</tspan>UW</text></svg>')
-write('_headers', '/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/styles.css\n  Cache-Control: public, max-age=300\n\n/img/*\n  Cache-Control: public, max-age=86400\n')
+write('_headers',
+      '/*\n'
+      '  Cache-Control: public, max-age=0, must-revalidate\n'
+      '  X-Content-Type-Options: nosniff\n'
+      '  Referrer-Policy: strict-origin-when-cross-origin\n'
+      '  Permissions-Policy: interest-cohort=()\n\n'
+      '/styles.css\n  Cache-Control: public, max-age=300, must-revalidate\n\n'
+      '/img/*\n  Cache-Control: public, max-age=31536000, immutable\n\n'
+      '/sitemap.xml\n  Content-Type: application/xml\n  Cache-Control: public, max-age=3600\n\n'
+      '/feed.xml\n  Content-Type: application/rss+xml; charset=utf-8\n  Cache-Control: public, max-age=3600\n\n'
+      '/robots.txt\n  Content-Type: text/plain\n  Cache-Control: public, max-age=86400\n')
 print(f'  built {post_count} post pages + 8 named pages + /israel-joffe/ + {len(FEDERATION)} network articles + sitemap')

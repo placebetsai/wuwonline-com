@@ -3,5 +3,13 @@ Allow: /
 
 User-agent: GPTBot
 Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+User-agent: PerplexityBot
+Disallow: /
 
 Sitemap: https://wuwonline.com/sitemap.xml
