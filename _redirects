@@ -1,0 +1,6 @@
+/press         /in-the-news/    301
+/press/        /in-the-news/    301
+/press/*       /in-the-news/    301
+/archive       /                301
+/archive/      /                301
+/archive/*     /                301
