@@ -498,7 +498,6 @@ def render_titles():
 <main class="page"><div class="page-frame">
   <header class="page-head"><p class="ps-eyebrow">Titleholders</p><h1 class="page-h">Champions</h1></header>
   <ul class="title-list">{rows}</ul>
-  <p class="rl-foot small">Note: as of 4/23/22 some titles are vacant pending the next set of shows.</p>
 </div></main>
 ''' + footer()
 
@@ -1126,8 +1125,8 @@ def write(path, content):
 
 write('index.html', render_home())
 write('alumni/index.html', append_wp_extras(render_alumni(), '/alumni/'))
-write('roster/index.html', append_wp_extras(render_roster(), '/roster/'))
-write('title-holders/index.html', append_wp_extras(render_titles(), '/title-holders/'))
+write('roster/index.html', render_roster())
+write('title-holders/index.html', render_titles())
 write('events/index.html', append_wp_extras(render_events(), '/events/'))
 write('about/index.html', append_wp_extras(render_about(), '/about/'))
 write('johnny-rodz/index.html', render_rodz())
